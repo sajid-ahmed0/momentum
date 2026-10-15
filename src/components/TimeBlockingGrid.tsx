@@ -533,6 +533,7 @@ export const TimeBlockingGrid = React.memo<TimeBlockingGridProps>(({
     }
 
     // Also merge any fetched GCal events that aren't yet in visible blocks, so they show up on the schedule instantly!
+    const dismissedIds = getDismissedGCalIds();
     for (const ev of gcalEvents) {
       if (dismissedIds.has(ev.id)) continue;
       const normActivity = normalizeActivityName(ev.summary, '📅');
@@ -547,12 +548,14 @@ export const TimeBlockingGrid = React.memo<TimeBlockingGridProps>(({
           date: ev.date,
           color: ev.color || 'sky',
           googleCalendarEventId: ev.id,
+          uid: 'gcal_live',
+          timestamp: Date.now(),
         });
       }
     }
 
     return Array.from(bySlotKey.values());
-  }, [timeBlocks, gcalEvents, dismissedIds]);
+  }, [timeBlocks, gcalEvents]);
 
   // Schedule blocks within the selected sync range
   const syncRangeDateStrings = getSyncRangeBounds(calendarSyncRange).days.map(d => format(d, 'yyyy-MM-dd'));

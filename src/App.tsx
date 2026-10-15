@@ -84,8 +84,7 @@ import {
   ListOrdered,
   SlidersHorizontal,
   Lightbulb,
-  Brain,
-  Github
+  Brain
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { auth, db, signInWithGoogle, logout, loginWithEmail, registerWithEmail, loginAnonymously } from './firebase';
@@ -95,7 +94,6 @@ import { BreathingGuide } from './components/BreathingGuide';
 import { TimeBlockingGrid, COLOR_OPTIONS, DEFAULT_SCHEDULE_TIMEZONE, getDateStrInTz, get24HourTimeInTz } from './components/TimeBlockingGrid';
 import { SketchCanvas } from './components/SketchCanvas';
 import { StudyTodos } from './components/StudyTodos';
-import { GitHubSyncModal } from './components/GitHubSyncModal';
 import { parseSketchPages } from './utils/sketchUtils';
 import { parseTimeInput, formatMinutesToTime, getCurrentTime } from './utils/timeHabitUtils';
 
@@ -574,7 +572,6 @@ export default function App() {
   );
   
   const [showAddModal, setShowAddModal] = useState(false);
-  const [showGitHubModal, setShowGitHubModal] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [scheduleDefaults, setScheduleDefaults] = useState<{ startTime: string; endTime: string; date: string; block?: TimeBlock } | null>(null);
@@ -2257,22 +2254,6 @@ export default function App() {
                   <div>
                     <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-900 dark:text-zinc-100 transition-colors">Install App</p>
                     <p className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">Use as Native</p>
-                  </div>
-                </div>
-                <ArrowRight className="w-3 h-3 text-zinc-300 opacity-0 group-hover:opacity-100 transition-all -translate-x-1 group-hover:translate-x-0" />
-              </button>
-
-              <button 
-                onClick={() => setShowGitHubModal(true)}
-                className="w-full flex items-center justify-between group py-1"
-              >
-                <div className="flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center shadow-lg shadow-black/10 dark:shadow-white/5">
-                    <Github className="w-3.5 h-3.5 text-white dark:text-zinc-900" />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-900 dark:text-zinc-100 transition-colors">GitHub Push</p>
-                    <p className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">Repo & Sync Guide</p>
                   </div>
                 </div>
                 <ArrowRight className="w-3 h-3 text-zinc-300 opacity-0 group-hover:opacity-100 transition-all -translate-x-1 group-hover:translate-x-0" />
@@ -6442,7 +6423,6 @@ export default function App() {
             onBack={() => setUrgeSession(prev => prev ? { ...prev, showBreather: false } : null)} 
           />
         )}
-        <GitHubSyncModal isOpen={showGitHubModal} onClose={() => setShowGitHubModal(false)} />
       </AnimatePresence>
     </div>
   );
