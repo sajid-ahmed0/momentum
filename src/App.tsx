@@ -5314,22 +5314,23 @@ export default function App() {
                   <input 
                     name="startTime"
                     type="text" 
+                    required
                     inputMode="text"
                     autoComplete="off"
                     placeholder="HH:MM"
                     pattern="([01][0-9]|2[0-3]):[0-5][0-9]"
                     title="Type time as HH:MM, e.g. 04:00"
-                    onBlur={(e) => {
-                      const raw = e.target.value.trim();
-                      const m = raw.match(/^(\d{1,2})(?::(\d{1,2}))?$/);
-                      if (!m) return;
-                      const h = Math.min(23, parseInt(m[1], 10));
-                      const min = Math.min(59, m[2] ? parseInt(m[2], 10) : 0);
-                      setModalStartTime(`${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`);
-                    }}
-                    required
                     value={modalStartTime}
                     onChange={(e) => setModalStartTime(e.target.value)}
+                    onBlur={(e) => {
+                      const v = e.target.value.trim();
+                      const m = v.match(/^(\d{1,2})(?::(\d{1,2}))?$/);
+                      if (m) {
+                        const hh = String(Math.min(23, parseInt(m[1], 10))).padStart(2, '0');
+                        const mm = String(Math.min(59, parseInt(m[2] || '0', 10))).padStart(2, '0');
+                        setModalStartTime(`${hh}:${mm}`);
+                      }
+                    }}
                     className="w-full px-3 py-2.5 rounded-sm border border-high-line dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-100 font-bold text-xs dark:text-zinc-200"
                   />
                 </div>
@@ -5338,22 +5339,23 @@ export default function App() {
                   <input 
                     name="endTime"
                     type="text" 
+                    required
                     inputMode="text"
                     autoComplete="off"
                     placeholder="HH:MM"
                     pattern="([01][0-9]|2[0-3]):[0-5][0-9]"
                     title="Type time as HH:MM, e.g. 04:45"
-                    onBlur={(e) => {
-                      const raw = e.target.value.trim();
-                      const m = raw.match(/^(\d{1,2})(?::(\d{1,2}))?$/);
-                      if (!m) return;
-                      const h = Math.min(23, parseInt(m[1], 10));
-                      const min = Math.min(59, m[2] ? parseInt(m[2], 10) : 0);
-                      setModalEndTime(`${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`);
-                    }}
-                    required
                     value={modalEndTime}
                     onChange={(e) => setModalEndTime(e.target.value)}
+                    onBlur={(e) => {
+                      const v = e.target.value.trim();
+                      const m = v.match(/^(\d{1,2})(?::(\d{1,2}))?$/);
+                      if (m) {
+                        const hh = String(Math.min(23, parseInt(m[1], 10))).padStart(2, '0');
+                        const mm = String(Math.min(59, parseInt(m[2] || '0', 10))).padStart(2, '0');
+                        setModalEndTime(`${hh}:${mm}`);
+                      }
+                    }}
                     className="w-full px-3 py-2.5 rounded-sm border border-high-line dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-100 font-bold text-xs dark:text-zinc-200"
                   />
                 </div>
