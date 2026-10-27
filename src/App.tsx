@@ -582,27 +582,42 @@ export default function App() {
   const [modalDate, setModalDate] = useState<string>(() => getDateStrInTz(new Date(), DEFAULT_SCHEDULE_TIMEZONE));
   const [modalStartTime, setModalStartTime] = useState<string>('09:00');
   const [modalEndTime, setModalEndTime] = useState<string>('10:00');
-  const [modalStartTimeText, setModalStartTimeText] = useState<string>('09:00 AM');
-  const [modalEndTimeText, setModalEndTimeText] = useState<string>('10:00 AM');
-  const to12Hour = (t: string): string => {
-    const parts = t.split(':');
-    const h24 = parseInt(parts[0] || '0', 10);
-    const m = parts[1] || '00';
-    const suffix = h24 >= 12 ? 'PM' : 'AM';
-    const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
-    return `${String(h12).padStart(2, '0')}:${m} ${suffix}`;
+  const timeParts = (t: string) => {
+    const h24 = parseInt((t.split(':')[0] || '0'), 10);
+    const minute = t.split(':')[1] || '00';
+    return { hour12: h24 % 12 === 0 ? 12 : h24 % 12, minute, meridiem: h24 >= 12 ? 'PM' : 'AM' };
   };
-  const parse12Hour = (s: string): string | null => {
-    const v = s.trim().toUpperCase();
-    const m = v.match(/^(\d{1,2})(?::(\d{1,2}))?\s*([AP]M)$/);
-    if (!m) return null;
-    let h = parseInt(m[1], 10);
-    const min = parseInt(m[2] || '0', 10);
-    if (h < 1 || h > 12 || min > 59) return null;
-    const suffix = m[3];
-    if (suffix === 'PM' && h !== 12) h += 12;
-    if (suffix === 'AM' && h === 12) h = 0;
-    return `${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
+  const setTimeHour = (current: string, setTime: (v: string) => void, raw: string) => {
+    const digits = raw.replace(/\D/g, '').slice(-2);
+    if (!digits) return;
+    let h12 = parseInt(digits, 10);
+    if (h12 < 1) h12 = 1;
+    if (h12 > 12) h12 = 12;
+    const p = timeParts(current);
+    const h24 = p.meridiem === 'PM' ? (h12 === 12 ? 12 : h12 + 12) : (h12 === 12 ? 0 : h12);
+    setTime(`${String(h24).padStart(2, '0')}:${p.minute}`);
+  };
+  const setTimeMinute = (current: string, setTime: (v: string) => void, raw: string) => {
+    const digits = raw.replace(/\D/g, '').slice(-2);
+    if (!digits) return;
+    let min = parseInt(digits, 10);
+    if (min > 59) min = 59;
+    const p = timeParts(current);
+    const h24 = p.meridiem === 'PM' ? (p.hour12 === 12 ? 12 : p.hour12 + 12) : (p.hour12 === 12 ? 0 : p.hour12);
+    setTime(`${String(h24).padStart(2, '0')}:${String(min).padStart(2, '0')}`);
+  };
+  const setTimeMeridiem = (current: string, setTime: (v: string) => void, raw: string) => {
+    const upper = raw.toUpperCase();
+    const mer = upper.includes('P') ? 'PM' : upper.includes('A') ? 'AM' : null;
+    if (!mer) return;
+    const p = timeParts(current);
+    const h24 = mer === 'PM' ? (p.hour12 === 12 ? 12 : p.hour12 + 12) : (p.hour12 === 12 ? 0 : p.hour12);
+    setTime(`${String(h24).padStart(2, '0')}:${p.minute}`);
+  };
+  const selectSegment = (e: React.FocusEvent<HTMLInputElement>) => {
+    const input = e.target;
+    input.select();
+    setTimeout(() => input.select(), 0);
   };
   const [newSubtaskInput, setNewSubtaskInput] = useState<string>('');
   const [showOverthinkingModal, setShowOverthinkingModal] = useState(false);
@@ -1191,12 +1206,8 @@ export default function App() {
       setModalSubtasks(activeBlock?.subtasks ? JSON.parse(JSON.stringify(activeBlock.subtasks)) : []);
       setModalShowCountdown(Boolean(activeBlock?.showCountdown));
       setModalDate(activeBlock?.date || scheduleDefaults?.date || getDateStrInTz(new Date(), DEFAULT_SCHEDULE_TIMEZONE));
-      const nextStartTime = activeBlock?.startTime || scheduleDefaults?.startTime || '09:00';
-      const nextEndTime = activeBlock?.endTime || scheduleDefaults?.endTime || '10:00';
-      setModalStartTime(nextStartTime);
-      setModalEndTime(nextEndTime);
-      setModalStartTimeText(to12Hour(nextStartTime));
-      setModalEndTimeText(to12Hour(nextEndTime));
+      setModalStartTime(activeBlock?.startTime || scheduleDefaults?.startTime || '09:00');
+      setModalEndTime(activeBlock?.endTime || scheduleDefaults?.endTime || '10:00');
       setNewSubtaskInput('');
     }
   }, [showScheduleModal, editingTimeBlock, scheduleDefaults]);
@@ -5338,68 +5349,22 @@ export default function App() {
                 <div>
                   <label className="block text-[10px] font-bold uppercase text-zinc-400 dark:text-zinc-500 tracking-[0.2em] mb-2">Start Time</label>
                   <input type="hidden" name="startTime" value={modalStartTime} />
-                  <input 
-                    type="text" 
-                    required
-                    inputMode="text"
-                    autoComplete="off"
-                    placeholder="09:00 AM"
-                    title="Type time in 12-hour format only, e.g. 04:00 PM — AM/PM required"
-                    value={modalStartTimeText}
-                    onFocus={(e) => {
-                      const input = e.target;
-                      input.select();
-                      setTimeout(() => input.select(), 0);
-                    }}
-                    onChange={(e) => {
-                      setModalStartTimeText(e.target.value);
-                      const parsed = parse12Hour(e.target.value);
-                      if (parsed) setModalStartTime(parsed);
-                    }}
-                    onBlur={(e) => {
-                      const parsed = parse12Hour(e.target.value);
-                      if (parsed) {
-                        setModalStartTime(parsed);
-                        setModalStartTimeText(to12Hour(parsed));
-                      } else {
-                        setModalStartTimeText(to12Hour(modalStartTime));
-                      }
-                    }}
-                    className="w-full px-3 py-2.5 rounded-sm border border-high-line dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-100 font-bold text-xs dark:text-zinc-200"
-                  />
+                  <div className="w-full px-2 py-2.5 rounded-sm border border-high-line dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 focus-within:ring-1 focus-within:ring-zinc-900 dark:focus-within:ring-zinc-100 font-bold text-xs dark:text-zinc-200 flex items-center justify-center gap-0.5">
+                    <input type="text" inputMode="numeric" autoComplete="off" aria-label="Start hour" title="Tap hour to select it, then type 01-12" value={String(timeParts(modalStartTime).hour12).padStart(2, '0')} onFocus={selectSegment} onChange={(e) => setTimeHour(modalStartTime, setModalStartTime, e.target.value)} className="w-7 bg-transparent text-center focus:outline-none" />
+                    <span>:</span>
+                    <input type="text" inputMode="numeric" autoComplete="off" aria-label="Start minute" title="Tap minute to select it, then type 00-59" value={timeParts(modalStartTime).minute} onFocus={selectSegment} onChange={(e) => setTimeMinute(modalStartTime, setModalStartTime, e.target.value)} className="w-7 bg-transparent text-center focus:outline-none" />
+                    <input type="text" inputMode="text" autoComplete="off" aria-label="Start AM or PM" title="Tap AM/PM to select it, then type A or P" value={timeParts(modalStartTime).meridiem} onFocus={selectSegment} onChange={(e) => setTimeMeridiem(modalStartTime, setModalStartTime, e.target.value)} className="w-9 bg-transparent text-center focus:outline-none" />
+                  </div>
                 </div>
                 <div>
                   <label className="block text-[10px] font-bold uppercase text-zinc-400 dark:text-zinc-500 tracking-[0.2em] mb-2">End Time</label>
                   <input type="hidden" name="endTime" value={modalEndTime} />
-                  <input 
-                    type="text" 
-                    required
-                    inputMode="text"
-                    autoComplete="off"
-                    placeholder="10:00 AM"
-                    title="Type time in 12-hour format only, e.g. 04:45 PM — AM/PM required"
-                    value={modalEndTimeText}
-                    onFocus={(e) => {
-                      const input = e.target;
-                      input.select();
-                      setTimeout(() => input.select(), 0);
-                    }}
-                    onChange={(e) => {
-                      setModalEndTimeText(e.target.value);
-                      const parsed = parse12Hour(e.target.value);
-                      if (parsed) setModalEndTime(parsed);
-                    }}
-                    onBlur={(e) => {
-                      const parsed = parse12Hour(e.target.value);
-                      if (parsed) {
-                        setModalEndTime(parsed);
-                        setModalEndTimeText(to12Hour(parsed));
-                      } else {
-                        setModalEndTimeText(to12Hour(modalEndTime));
-                      }
-                    }}
-                    className="w-full px-3 py-2.5 rounded-sm border border-high-line dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-100 font-bold text-xs dark:text-zinc-200"
-                  />
+                  <div className="w-full px-2 py-2.5 rounded-sm border border-high-line dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 focus-within:ring-1 focus-within:ring-zinc-900 dark:focus-within:ring-zinc-100 font-bold text-xs dark:text-zinc-200 flex items-center justify-center gap-0.5">
+                    <input type="text" inputMode="numeric" autoComplete="off" aria-label="End hour" title="Tap hour to select it, then type 01-12" value={String(timeParts(modalEndTime).hour12).padStart(2, '0')} onFocus={selectSegment} onChange={(e) => setTimeHour(modalEndTime, setModalEndTime, e.target.value)} className="w-7 bg-transparent text-center focus:outline-none" />
+                    <span>:</span>
+                    <input type="text" inputMode="numeric" autoComplete="off" aria-label="End minute" title="Tap minute to select it, then type 00-59" value={timeParts(modalEndTime).minute} onFocus={selectSegment} onChange={(e) => setTimeMinute(modalEndTime, setModalEndTime, e.target.value)} className="w-7 bg-transparent text-center focus:outline-none" />
+                    <input type="text" inputMode="text" autoComplete="off" aria-label="End AM or PM" title="Tap AM/PM to select it, then type A or P" value={timeParts(modalEndTime).meridiem} onFocus={selectSegment} onChange={(e) => setTimeMeridiem(modalEndTime, setModalEndTime, e.target.value)} className="w-9 bg-transparent text-center focus:outline-none" />
+                  </div>
                 </div>
               </div>
 
