@@ -5313,7 +5313,20 @@ export default function App() {
                   <label className="block text-[10px] font-bold uppercase text-zinc-400 dark:text-zinc-500 tracking-[0.2em] mb-2">Start Time</label>
                   <input 
                     name="startTime"
-                    type="time" 
+                    type="text" 
+                    inputMode="text"
+                    autoComplete="off"
+                    placeholder="HH:MM"
+                    pattern="([01][0-9]|2[0-3]):[0-5][0-9]"
+                    title="Type time as HH:MM, e.g. 04:00"
+                    onBlur={(e) => {
+                      const raw = e.target.value.trim();
+                      const m = raw.match(/^(\d{1,2})(?::(\d{1,2}))?$/);
+                      if (!m) return;
+                      const h = Math.min(23, parseInt(m[1], 10));
+                      const min = Math.min(59, m[2] ? parseInt(m[2], 10) : 0);
+                      setModalStartTime(`${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`);
+                    }}
                     required
                     value={modalStartTime}
                     onChange={(e) => setModalStartTime(e.target.value)}
@@ -5324,7 +5337,20 @@ export default function App() {
                   <label className="block text-[10px] font-bold uppercase text-zinc-400 dark:text-zinc-500 tracking-[0.2em] mb-2">End Time</label>
                   <input 
                     name="endTime"
-                    type="time" 
+                    type="text" 
+                    inputMode="text"
+                    autoComplete="off"
+                    placeholder="HH:MM"
+                    pattern="([01][0-9]|2[0-3]):[0-5][0-9]"
+                    title="Type time as HH:MM, e.g. 04:45"
+                    onBlur={(e) => {
+                      const raw = e.target.value.trim();
+                      const m = raw.match(/^(\d{1,2})(?::(\d{1,2}))?$/);
+                      if (!m) return;
+                      const h = Math.min(23, parseInt(m[1], 10));
+                      const min = Math.min(59, m[2] ? parseInt(m[2], 10) : 0);
+                      setModalEndTime(`${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`);
+                    }}
                     required
                     value={modalEndTime}
                     onChange={(e) => setModalEndTime(e.target.value)}
