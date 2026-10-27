@@ -594,17 +594,14 @@ export default function App() {
   };
   const parse12Hour = (s: string): string | null => {
     const v = s.trim().toUpperCase();
-    const m = v.match(/^(\d{1,2})(?::(\d{1,2}))?\s*([AP]M)?$/);
+    const m = v.match(/^(\d{1,2})(?::(\d{1,2}))?\s*([AP]M)$/);
     if (!m) return null;
     let h = parseInt(m[1], 10);
     const min = parseInt(m[2] || '0', 10);
-    if (h < 1 || h > 23 || min > 59) return null;
+    if (h < 1 || h > 12 || min > 59) return null;
     const suffix = m[3];
-    if (suffix) {
-      if (h > 12) return null;
-      if (suffix === 'PM' && h !== 12) h += 12;
-      if (suffix === 'AM' && h === 12) h = 0;
-    }
+    if (suffix === 'PM' && h !== 12) h += 12;
+    if (suffix === 'AM' && h === 12) h = 0;
     return `${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
   };
   const [newSubtaskInput, setNewSubtaskInput] = useState<string>('');
@@ -5347,8 +5344,13 @@ export default function App() {
                     inputMode="text"
                     autoComplete="off"
                     placeholder="09:00 AM"
-                    title="Type time in 12-hour format, e.g. 04:00 PM"
+                    title="Type time in 12-hour format only, e.g. 04:00 PM — AM/PM required"
                     value={modalStartTimeText}
+                    onFocus={(e) => {
+                      const input = e.target;
+                      input.select();
+                      setTimeout(() => input.select(), 0);
+                    }}
                     onChange={(e) => {
                       setModalStartTimeText(e.target.value);
                       const parsed = parse12Hour(e.target.value);
@@ -5375,8 +5377,13 @@ export default function App() {
                     inputMode="text"
                     autoComplete="off"
                     placeholder="10:00 AM"
-                    title="Type time in 12-hour format, e.g. 04:45 PM"
+                    title="Type time in 12-hour format only, e.g. 04:45 PM — AM/PM required"
                     value={modalEndTimeText}
+                    onFocus={(e) => {
+                      const input = e.target;
+                      input.select();
+                      setTimeout(() => input.select(), 0);
+                    }}
                     onChange={(e) => {
                       setModalEndTimeText(e.target.value);
                       const parsed = parse12Hour(e.target.value);
