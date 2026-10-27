@@ -619,6 +619,19 @@ export default function App() {
     input.select();
     setTimeout(() => input.select(), 0);
   };
+  const handleSegmentEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    const segments = Array.from(document.querySelectorAll<HTMLInputElement>('input[data-time-segment="true"]'));
+    const idx = segments.indexOf(e.currentTarget);
+    const next = segments[idx + 1];
+    if (next) {
+      next.focus();
+      next.select();
+    } else {
+      e.currentTarget.form?.requestSubmit();
+    }
+  };
   const [newSubtaskInput, setNewSubtaskInput] = useState<string>('');
   const [showOverthinkingModal, setShowOverthinkingModal] = useState(false);
   const [showJournalModal, setShowJournalModal] = useState(false);
@@ -5350,20 +5363,20 @@ export default function App() {
                   <label className="block text-[10px] font-bold uppercase text-zinc-400 dark:text-zinc-500 tracking-[0.2em] mb-2">Start Time</label>
                   <input type="hidden" name="startTime" value={modalStartTime} />
                   <div className="w-full px-2 py-2.5 rounded-sm border border-high-line dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 focus-within:ring-1 focus-within:ring-zinc-900 dark:focus-within:ring-zinc-100 font-bold text-xs dark:text-zinc-200 flex items-center justify-center gap-0.5">
-                    <input type="text" inputMode="numeric" autoComplete="off" aria-label="Start hour" title="Tap hour to select it, then type 01-12" value={String(timeParts(modalStartTime).hour12).padStart(2, '0')} onFocus={selectSegment} onChange={(e) => setTimeHour(modalStartTime, setModalStartTime, e.target.value)} className="w-7 bg-transparent text-center focus:outline-none focus:bg-blue-500 focus:text-white selection:bg-blue-500 selection:text-white rounded-sm" />
+                    <input type="text" inputMode="numeric" autoComplete="off" aria-label="Start hour" title="Tap hour to select it, then type 01-12" value={String(timeParts(modalStartTime).hour12).padStart(2, '0')} data-time-segment="true" onFocus={selectSegment} onKeyDown={handleSegmentEnter} onChange={(e) => setTimeHour(modalStartTime, setModalStartTime, e.target.value)} className="w-7 bg-transparent text-center focus:outline-none focus:bg-blue-500 focus:text-white selection:bg-blue-500 selection:text-white rounded-sm" />
                     <span>:</span>
-                    <input type="text" inputMode="numeric" autoComplete="off" aria-label="Start minute" title="Tap minute to select it, then type 00-59" value={timeParts(modalStartTime).minute} onFocus={selectSegment} onChange={(e) => setTimeMinute(modalStartTime, setModalStartTime, e.target.value)} className="w-7 bg-transparent text-center focus:outline-none focus:bg-blue-500 focus:text-white selection:bg-blue-500 selection:text-white rounded-sm" />
-                    <input type="text" inputMode="text" autoComplete="off" aria-label="Start AM or PM" title="Tap AM/PM to select it, then type A or P" value={timeParts(modalStartTime).meridiem} onFocus={selectSegment} onChange={(e) => setTimeMeridiem(modalStartTime, setModalStartTime, e.target.value)} className="w-9 bg-transparent text-center focus:outline-none focus:bg-blue-500 focus:text-white selection:bg-blue-500 selection:text-white rounded-sm" />
+                    <input type="text" inputMode="numeric" autoComplete="off" aria-label="Start minute" title="Tap minute to select it, then type 00-59" value={timeParts(modalStartTime).minute} data-time-segment="true" onFocus={selectSegment} onKeyDown={handleSegmentEnter} onChange={(e) => setTimeMinute(modalStartTime, setModalStartTime, e.target.value)} className="w-7 bg-transparent text-center focus:outline-none focus:bg-blue-500 focus:text-white selection:bg-blue-500 selection:text-white rounded-sm" />
+                    <input type="text" inputMode="text" autoComplete="off" aria-label="Start AM or PM" title="Tap AM/PM to select it, then type A or P" value={timeParts(modalStartTime).meridiem} data-time-segment="true" onFocus={selectSegment} onKeyDown={handleSegmentEnter} onChange={(e) => setTimeMeridiem(modalStartTime, setModalStartTime, e.target.value)} className="w-9 bg-transparent text-center focus:outline-none focus:bg-blue-500 focus:text-white selection:bg-blue-500 selection:text-white rounded-sm" />
                   </div>
                 </div>
                 <div>
                   <label className="block text-[10px] font-bold uppercase text-zinc-400 dark:text-zinc-500 tracking-[0.2em] mb-2">End Time</label>
                   <input type="hidden" name="endTime" value={modalEndTime} />
                   <div className="w-full px-2 py-2.5 rounded-sm border border-high-line dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 focus-within:ring-1 focus-within:ring-zinc-900 dark:focus-within:ring-zinc-100 font-bold text-xs dark:text-zinc-200 flex items-center justify-center gap-0.5">
-                    <input type="text" inputMode="numeric" autoComplete="off" aria-label="End hour" title="Tap hour to select it, then type 01-12" value={String(timeParts(modalEndTime).hour12).padStart(2, '0')} onFocus={selectSegment} onChange={(e) => setTimeHour(modalEndTime, setModalEndTime, e.target.value)} className="w-7 bg-transparent text-center focus:outline-none focus:bg-blue-500 focus:text-white selection:bg-blue-500 selection:text-white rounded-sm" />
+                    <input type="text" inputMode="numeric" autoComplete="off" aria-label="End hour" title="Tap hour to select it, then type 01-12" value={String(timeParts(modalEndTime).hour12).padStart(2, '0')} data-time-segment="true" onFocus={selectSegment} onKeyDown={handleSegmentEnter} onChange={(e) => setTimeHour(modalEndTime, setModalEndTime, e.target.value)} className="w-7 bg-transparent text-center focus:outline-none focus:bg-blue-500 focus:text-white selection:bg-blue-500 selection:text-white rounded-sm" />
                     <span>:</span>
-                    <input type="text" inputMode="numeric" autoComplete="off" aria-label="End minute" title="Tap minute to select it, then type 00-59" value={timeParts(modalEndTime).minute} onFocus={selectSegment} onChange={(e) => setTimeMinute(modalEndTime, setModalEndTime, e.target.value)} className="w-7 bg-transparent text-center focus:outline-none focus:bg-blue-500 focus:text-white selection:bg-blue-500 selection:text-white rounded-sm" />
-                    <input type="text" inputMode="text" autoComplete="off" aria-label="End AM or PM" title="Tap AM/PM to select it, then type A or P" value={timeParts(modalEndTime).meridiem} onFocus={selectSegment} onChange={(e) => setTimeMeridiem(modalEndTime, setModalEndTime, e.target.value)} className="w-9 bg-transparent text-center focus:outline-none focus:bg-blue-500 focus:text-white selection:bg-blue-500 selection:text-white rounded-sm" />
+                    <input type="text" inputMode="numeric" autoComplete="off" aria-label="End minute" title="Tap minute to select it, then type 00-59" value={timeParts(modalEndTime).minute} data-time-segment="true" onFocus={selectSegment} onKeyDown={handleSegmentEnter} onChange={(e) => setTimeMinute(modalEndTime, setModalEndTime, e.target.value)} className="w-7 bg-transparent text-center focus:outline-none focus:bg-blue-500 focus:text-white selection:bg-blue-500 selection:text-white rounded-sm" />
+                    <input type="text" inputMode="text" autoComplete="off" aria-label="End AM or PM" title="Tap AM/PM to select it, then type A or P" value={timeParts(modalEndTime).meridiem} data-time-segment="true" onFocus={selectSegment} onKeyDown={handleSegmentEnter} onChange={(e) => setTimeMeridiem(modalEndTime, setModalEndTime, e.target.value)} className="w-9 bg-transparent text-center focus:outline-none focus:bg-blue-500 focus:text-white selection:bg-blue-500 selection:text-white rounded-sm" />
                   </div>
                 </div>
               </div>
