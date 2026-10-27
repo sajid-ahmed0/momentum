@@ -628,9 +628,9 @@ export default function App() {
     if (next) {
       next.focus();
       next.select();
+    } else {
+      e.currentTarget.form?.requestSubmit();
     }
-    // No auto-save on the last segment: the schedule is only logged
-    // when the Save Block button is pressed.
   };
   const [newSubtaskInput, setNewSubtaskInput] = useState<string>('');
   const [showOverthinkingModal, setShowOverthinkingModal] = useState(false);
