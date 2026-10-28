@@ -2032,10 +2032,10 @@ export const TimeBlockingGrid = React.memo<TimeBlockingGridProps>(({
                 }
               }
             }}
-            className="flex items-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-black text-xs uppercase tracking-wider rounded-lg shadow-lg hover:shadow-amber-500/20 active:scale-95 transition-all"
+            className="flex items-center gap-1.5 px-4 py-2 bg-zinc-900 text-white hover:bg-zinc-800 shadow-sm border border-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white dark:border-zinc-100 font-bold text-xs rounded-lg active:scale-95 transition-all"
           >
             <Plus className="w-4 h-4" />
-            <span>Block Time</span>
+            <span>Add block</span>
           </button>
         </div>
       </div>
