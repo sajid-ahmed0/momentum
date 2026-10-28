@@ -1584,7 +1584,7 @@ export default function App() {
     }
   };
 
-  const handleAddStudyTodo = async (data: { title: string; subject?: string; date: string; time?: string }) => {
+  const handleAddStudyTodo = async (data: { title: string; subject?: string; date: string; time?: string; subtasks?: BlockTask[] }) => {
     if (!user) return;
     try {
       await addDoc(collection(db, 'studyTodos'), {
@@ -1592,6 +1592,7 @@ export default function App() {
         subject: data.subject || '',
         date: data.date || format(startOfToday(), 'yyyy-MM-dd'),
         time: data.time || '',
+        subtasks: data.subtasks || [],
         completed: false,
         uid: user.uid,
         timestamp: Date.now()
@@ -1625,6 +1626,17 @@ export default function App() {
       await updateDoc(doc(db, 'studyTodos', todo.id), {
         completed: !todo.completed
       });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleToggleStudySubtask = async (todo: StudyTodo, subtaskId: string) => {
+    try {
+      const subtasks = (todo.subtasks || []).map(st =>
+        st.id === subtaskId ? { ...st, completed: !st.completed } : st
+      );
+      await updateDoc(doc(db, 'studyTodos', todo.id), { subtasks });
     } catch (err) {
       console.error(err);
     }
@@ -2984,6 +2996,7 @@ export default function App() {
                 onUpdate={handleUpdateStudyTodo}
                 onDelete={handleDeleteStudyTodo}
                 onToggle={handleToggleStudyTodo}
+                onToggleSubtask={handleToggleStudySubtask}
               />
             ) : activeTab === 'schedule' ? (
               <motion.div 

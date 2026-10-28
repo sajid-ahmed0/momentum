@@ -3,7 +3,7 @@ import { Plus, Check, Edit, Trash2, GraduationCap, Clock, X } from 'lucide-react
 import { motion } from 'motion/react';
 import { format, startOfToday, parseISO, parse } from 'date-fns';
 import { cn } from '../lib/utils';
-import { StudyTodo } from '../types';
+import { StudyTodo, BlockTask } from '../types';
 
 // --- Local UI primitives (mirroring App.tsx styles) ---
 
@@ -71,13 +71,14 @@ const Modal = ({ isOpen, onClose, title, children, maxWidth = "max-w-md" }: { ke
 
 interface StudyTodosProps {
   todos: StudyTodo[];
-  onAdd: (data: { title: string; subject?: string; date: string; time?: string }) => void;
+  onAdd: (data: { title: string; subject?: string; date: string; time?: string; subtasks?: BlockTask[] }) => void;
   onUpdate: (id: string, data: Partial<StudyTodo>) => void;
   onDelete: (id: string) => void;
   onToggle: (todo: StudyTodo) => void;
+  onToggleSubtask: (todo: StudyTodo, subtaskId: string) => void;
 }
 
-export const StudyTodos: React.FC<StudyTodosProps> = ({ todos, onAdd, onUpdate, onDelete, onToggle }) => {
+export const StudyTodos: React.FC<StudyTodosProps> = ({ todos, onAdd, onUpdate, onDelete, onToggle, onToggleSubtask }) => {
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<StudyTodo | null>(null);
 
@@ -98,16 +99,26 @@ export const StudyTodos: React.FC<StudyTodosProps> = ({ todos, onAdd, onUpdate, 
     setEditing(null);
   };
 
+  const parseSubtasks = (text: string, existing?: BlockTask[]): BlockTask[] => {
+    const doneByText = new Map((existing || []).map(st => [st.text, st.completed]));
+    return text.split('\n').map(line => line.trim()).filter(Boolean).map((line, i) => ({
+      id: `${Date.now()}-${i}-${Math.random().toString(36).slice(2, 7)}`,
+      text: line,
+      completed: doneByText.get(line) || false,
+    }));
+  };
+
   const renderItem = (todo: StudyTodo) => (
     <div
       key={todo.id}
       className={cn(
-        "group p-4 rounded-xl border transition-all flex items-center justify-between",
+        "group p-4 rounded-xl border transition-all",
         todo.completed
           ? "bg-zinc-50/50 dark:bg-zinc-900/30 border-zinc-100 dark:border-zinc-800 opacity-60"
           : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:border-emerald-500/40 dark:hover:border-emerald-500/40 shadow-xs"
       )}
     >
+      <div className="flex items-center justify-between">
       <div className="flex items-center gap-4 flex-1">
         <button
           onClick={() => onToggle(todo)}
@@ -164,6 +175,36 @@ export const StudyTodos: React.FC<StudyTodosProps> = ({ todos, onAdd, onUpdate, 
           <Trash2 className="w-3.5 h-3.5" />
         </button>
       </div>
+      </div>
+      {todo.subtasks && todo.subtasks.length > 0 && (
+        <div className="mt-3 ml-10 space-y-1.5">
+          <p className="text-[9px] font-mono font-bold uppercase text-zinc-400">
+            {todo.subtasks.filter(st => st.completed).length}/{todo.subtasks.length} subtasks
+          </p>
+          {todo.subtasks.map(st => (
+            <button
+              key={st.id}
+              onClick={() => onToggleSubtask(todo, st.id)}
+              className="flex items-center gap-2.5 w-full text-left"
+            >
+              <span className={cn(
+                "w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-all",
+                st.completed
+                  ? "bg-emerald-600 border-emerald-600 text-white"
+                  : "border-zinc-300 dark:border-zinc-700 hover:border-zinc-900 dark:hover:border-zinc-100"
+              )}>
+                {st.completed && <Check className="w-2.5 h-2.5" />}
+              </span>
+              <span className={cn(
+                "text-xs font-medium dark:text-zinc-300",
+                st.completed && "line-through text-zinc-400 dark:text-zinc-600"
+              )}>
+                {st.text}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 
@@ -250,6 +291,7 @@ export const StudyTodos: React.FC<StudyTodosProps> = ({ todos, onAdd, onUpdate, 
               subject: (fd.get('subject') as string) || '',
               date: fd.get('date') as string,
               time: fd.get('time') as string,
+              subtasks: parseSubtasks((fd.get('subtasks') as string) || '', editing?.subtasks),
             };
             if (editing) {
               onUpdate(editing.id, data);
@@ -278,6 +320,17 @@ export const StudyTodos: React.FC<StudyTodosProps> = ({ todos, onAdd, onUpdate, 
                 type="text"
                 defaultValue={editing?.subject || ''}
                 placeholder="e.g. Math, English, Physics"
+                className="w-full px-4 py-4 rounded-sm border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 focus:bg-white dark:focus:bg-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-100 transition-all font-bold text-sm dark:text-zinc-100"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-bold uppercase text-zinc-400 dark:text-zinc-500 tracking-[0.2em] mb-3">Subtasks (Optional)</label>
+              <textarea
+                name="subtasks"
+                rows={3}
+                defaultValue={editing?.subtasks?.map(st => st.text).join('\n') || ''}
+                placeholder={"One subtask per line\ne.g. Read the theory\nSolve 20 problems\nRevise the mistakes"}
                 className="w-full px-4 py-4 rounded-sm border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 focus:bg-white dark:focus:bg-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-100 transition-all font-bold text-sm dark:text-zinc-100"
               />
             </div>

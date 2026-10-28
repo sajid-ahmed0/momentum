@@ -93,6 +93,7 @@ export interface StudyTodo {
   id: string;
   title: string;
   completed: boolean;
+  subtasks?: BlockTask[];
   subject?: string; // e.g. Math, English — extensible for future study features
   date: string; // YYYY-MM-DD
   time?: string; // HH:mm
