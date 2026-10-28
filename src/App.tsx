@@ -582,24 +582,58 @@ export default function App() {
   const [modalDate, setModalDate] = useState<string>(() => getDateStrInTz(new Date(), DEFAULT_SCHEDULE_TIMEZONE));
   const [modalStartTime, setModalStartTime] = useState<string>('09:00');
   const [modalEndTime, setModalEndTime] = useState<string>('10:00');
+  // Tracks whether a time segment was just tapped/selected, so the first
+  // digit typed replaces the segment instead of appending to it. Without
+  // this, typing 7 after 06 on mobile (where selection does not stick)
+  // produced "067", whose last two digits (67) were clamped to 12, and
+  // deleting a digit left "0", which was clamped to 01.
+  const segmentFreshRef = useRef<Record<string, boolean>>({});
   const timeParts = (t: string) => {
     const h24 = parseInt((t.split(':')[0] || '0'), 10);
     const minute = t.split(':')[1] || '00';
     return { hour12: h24 % 12 === 0 ? 12 : h24 % 12, minute, meridiem: h24 >= 12 ? 'PM' : 'AM' };
   };
-  const setTimeHour = (current: string, setTime: (v: string) => void, raw: string) => {
-    const digits = raw.replace(/\D/g, '').slice(-2);
-    if (!digits) return;
-    let h12 = parseInt(digits, 10);
-    if (h12 < 1) h12 = 1;
-    if (h12 > 12) h12 = 12;
+  const setTimeHour = (current: string, setTime: (v: string) => void, raw: string, segmentKey?: string) => {
+    const allDigits = raw.replace(/\D/g, '');
+    if (!allDigits) {
+      if (segmentKey) segmentFreshRef.current[segmentKey] = true;
+      return;
+    }
+    let digits: string;
+    if (segmentKey && segmentFreshRef.current[segmentKey]) {
+      // First keystroke after tapping a segment: the intended hour is a
+      // single digit, or a full 2-digit value pasted at once. Appending
+      // (raw "067") and replacing (raw "7") both end in the right digit.
+      digits = allDigits.length === 2 ? allDigits : allDigits.slice(-1);
+      segmentFreshRef.current[segmentKey] = false;
+    } else {
+      digits = allDigits.slice(-2);
+    }
+    const h12 = parseInt(digits, 10);
+    // Never turn a deleted digit ("0") into 01: leave the hour unchanged
+    // and keep the segment fresh, so the next digit typed replaces it.
+    if (h12 < 1) {
+      if (segmentKey) segmentFreshRef.current[segmentKey] = true;
+      return;
+    }
+    const clamped = h12 > 12 ? 12 : h12;
     const p = timeParts(current);
-    const h24 = p.meridiem === 'PM' ? (h12 === 12 ? 12 : h12 + 12) : (h12 === 12 ? 0 : h12);
+    const h24 = p.meridiem === 'PM' ? (clamped === 12 ? 12 : clamped + 12) : (clamped === 12 ? 0 : clamped);
     setTime(`${String(h24).padStart(2, '0')}:${p.minute}`);
   };
-  const setTimeMinute = (current: string, setTime: (v: string) => void, raw: string) => {
-    const digits = raw.replace(/\D/g, '').slice(-2);
-    if (!digits) return;
+  const setTimeMinute = (current: string, setTime: (v: string) => void, raw: string, segmentKey?: string) => {
+    const allDigits = raw.replace(/\D/g, '');
+    if (!allDigits) {
+      if (segmentKey) segmentFreshRef.current[segmentKey] = true;
+      return;
+    }
+    let digits: string;
+    if (segmentKey && segmentFreshRef.current[segmentKey]) {
+      digits = allDigits.length === 2 ? allDigits : allDigits.slice(-1);
+      segmentFreshRef.current[segmentKey] = false;
+    } else {
+      digits = allDigits.slice(-2);
+    }
     let min = parseInt(digits, 10);
     if (min > 59) min = 59;
     const p = timeParts(current);
@@ -614,7 +648,8 @@ export default function App() {
     const h24 = mer === 'PM' ? (p.hour12 === 12 ? 12 : p.hour12 + 12) : (p.hour12 === 12 ? 0 : p.hour12);
     setTime(`${String(h24).padStart(2, '0')}:${p.minute}`);
   };
-  const selectSegment = (e: React.FocusEvent<HTMLInputElement>) => {
+  const selectSegment = (e: React.FocusEvent<HTMLInputElement>, segmentKey?: string) => {
+    if (segmentKey) segmentFreshRef.current[segmentKey] = true;
     const input = e.target;
     input.select();
     setTimeout(() => input.select(), 0);
@@ -5363,20 +5398,20 @@ export default function App() {
                   <label className="block text-[10px] font-bold uppercase text-zinc-400 dark:text-zinc-500 tracking-[0.2em] mb-2">Start Time</label>
                   <input type="hidden" name="startTime" value={modalStartTime} />
                   <div className="w-full px-2 py-2.5 rounded-sm border border-high-line dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 focus-within:ring-1 focus-within:ring-zinc-900 dark:focus-within:ring-zinc-100 font-bold text-xs dark:text-zinc-200 flex items-center justify-center gap-0.5">
-                    <input type="text" inputMode="numeric" autoComplete="off" aria-label="Start hour" title="Tap hour to select it, then type 01-12" value={String(timeParts(modalStartTime).hour12).padStart(2, '0')} data-time-segment="true" onFocus={selectSegment} onKeyDown={handleSegmentEnter} onChange={(e) => setTimeHour(modalStartTime, setModalStartTime, e.target.value)} className="w-7 bg-transparent text-center focus:outline-none focus:bg-blue-500 focus:text-white selection:bg-blue-500 selection:text-white rounded-sm" />
+                    <input type="text" inputMode="numeric" autoComplete="off" aria-label="Start hour" title="Tap hour to select it, then type 1-12 (a single digit works)" value={String(timeParts(modalStartTime).hour12).padStart(2, '0')} data-time-segment="true" onFocus={(e) => selectSegment(e, 'start-hour')} onClick={(e) => { segmentFreshRef.current['start-hour'] = true; e.currentTarget.select(); }} onKeyDown={handleSegmentEnter} onChange={(e) => setTimeHour(modalStartTime, setModalStartTime, e.target.value, 'start-hour')} className="w-7 bg-transparent text-center focus:outline-none focus:bg-blue-500 focus:text-white selection:bg-blue-500 selection:text-white rounded-sm" />
                     <span>:</span>
-                    <input type="text" inputMode="numeric" autoComplete="off" aria-label="Start minute" title="Tap minute to select it, then type 00-59" value={timeParts(modalStartTime).minute} data-time-segment="true" onFocus={selectSegment} onKeyDown={handleSegmentEnter} onChange={(e) => setTimeMinute(modalStartTime, setModalStartTime, e.target.value)} className="w-7 bg-transparent text-center focus:outline-none focus:bg-blue-500 focus:text-white selection:bg-blue-500 selection:text-white rounded-sm" />
-                    <input type="text" inputMode="text" autoComplete="off" aria-label="Start AM or PM" title="Tap AM/PM to select it, then type A or P" value={timeParts(modalStartTime).meridiem} data-time-segment="true" onFocus={selectSegment} onKeyDown={handleSegmentEnter} onChange={(e) => setTimeMeridiem(modalStartTime, setModalStartTime, e.target.value)} className="w-9 bg-transparent text-center focus:outline-none focus:bg-blue-500 focus:text-white selection:bg-blue-500 selection:text-white rounded-sm" />
+                    <input type="text" inputMode="numeric" autoComplete="off" aria-label="Start minute" title="Tap minute to select it, then type 00-59" value={timeParts(modalStartTime).minute} data-time-segment="true" onFocus={(e) => selectSegment(e, 'start-minute')} onClick={(e) => { segmentFreshRef.current['start-minute'] = true; e.currentTarget.select(); }} onKeyDown={handleSegmentEnter} onChange={(e) => setTimeMinute(modalStartTime, setModalStartTime, e.target.value, 'start-minute')} className="w-7 bg-transparent text-center focus:outline-none focus:bg-blue-500 focus:text-white selection:bg-blue-500 selection:text-white rounded-sm" />
+                    <input type="text" inputMode="text" autoComplete="off" aria-label="Start AM or PM" title="Tap AM/PM to select it, then type A or P" value={timeParts(modalStartTime).meridiem} data-time-segment="true" onFocus={(e) => selectSegment(e, 'start-meridiem')} onClick={(e) => { e.currentTarget.select(); }} onKeyDown={handleSegmentEnter} onChange={(e) => setTimeMeridiem(modalStartTime, setModalStartTime, e.target.value)} className="w-9 bg-transparent text-center focus:outline-none focus:bg-blue-500 focus:text-white selection:bg-blue-500 selection:text-white rounded-sm" />
                   </div>
                 </div>
                 <div>
                   <label className="block text-[10px] font-bold uppercase text-zinc-400 dark:text-zinc-500 tracking-[0.2em] mb-2">End Time</label>
                   <input type="hidden" name="endTime" value={modalEndTime} />
                   <div className="w-full px-2 py-2.5 rounded-sm border border-high-line dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 focus-within:ring-1 focus-within:ring-zinc-900 dark:focus-within:ring-zinc-100 font-bold text-xs dark:text-zinc-200 flex items-center justify-center gap-0.5">
-                    <input type="text" inputMode="numeric" autoComplete="off" aria-label="End hour" title="Tap hour to select it, then type 01-12" value={String(timeParts(modalEndTime).hour12).padStart(2, '0')} data-time-segment="true" onFocus={selectSegment} onKeyDown={handleSegmentEnter} onChange={(e) => setTimeHour(modalEndTime, setModalEndTime, e.target.value)} className="w-7 bg-transparent text-center focus:outline-none focus:bg-blue-500 focus:text-white selection:bg-blue-500 selection:text-white rounded-sm" />
+                    <input type="text" inputMode="numeric" autoComplete="off" aria-label="End hour" title="Tap hour to select it, then type 1-12 (a single digit works)" value={String(timeParts(modalEndTime).hour12).padStart(2, '0')} data-time-segment="true" onFocus={(e) => selectSegment(e, 'end-hour')} onClick={(e) => { segmentFreshRef.current['end-hour'] = true; e.currentTarget.select(); }} onKeyDown={handleSegmentEnter} onChange={(e) => setTimeHour(modalEndTime, setModalEndTime, e.target.value, 'end-hour')} className="w-7 bg-transparent text-center focus:outline-none focus:bg-blue-500 focus:text-white selection:bg-blue-500 selection:text-white rounded-sm" />
                     <span>:</span>
-                    <input type="text" inputMode="numeric" autoComplete="off" aria-label="End minute" title="Tap minute to select it, then type 00-59" value={timeParts(modalEndTime).minute} data-time-segment="true" onFocus={selectSegment} onKeyDown={handleSegmentEnter} onChange={(e) => setTimeMinute(modalEndTime, setModalEndTime, e.target.value)} className="w-7 bg-transparent text-center focus:outline-none focus:bg-blue-500 focus:text-white selection:bg-blue-500 selection:text-white rounded-sm" />
-                    <input type="text" inputMode="text" autoComplete="off" aria-label="End AM or PM" title="Tap AM/PM to select it, then type A or P" value={timeParts(modalEndTime).meridiem} data-time-segment="true" onFocus={selectSegment} onKeyDown={handleSegmentEnter} onChange={(e) => setTimeMeridiem(modalEndTime, setModalEndTime, e.target.value)} className="w-9 bg-transparent text-center focus:outline-none focus:bg-blue-500 focus:text-white selection:bg-blue-500 selection:text-white rounded-sm" />
+                    <input type="text" inputMode="numeric" autoComplete="off" aria-label="End minute" title="Tap minute to select it, then type 00-59" value={timeParts(modalEndTime).minute} data-time-segment="true" onFocus={(e) => selectSegment(e, 'end-minute')} onClick={(e) => { segmentFreshRef.current['end-minute'] = true; e.currentTarget.select(); }} onKeyDown={handleSegmentEnter} onChange={(e) => setTimeMinute(modalEndTime, setModalEndTime, e.target.value, 'end-minute')} className="w-7 bg-transparent text-center focus:outline-none focus:bg-blue-500 focus:text-white selection:bg-blue-500 selection:text-white rounded-sm" />
+                    <input type="text" inputMode="text" autoComplete="off" aria-label="End AM or PM" title="Tap AM/PM to select it, then type A or P" value={timeParts(modalEndTime).meridiem} data-time-segment="true" onFocus={(e) => selectSegment(e, 'end-meridiem')} onClick={(e) => { e.currentTarget.select(); }} onKeyDown={handleSegmentEnter} onChange={(e) => setTimeMeridiem(modalEndTime, setModalEndTime, e.target.value)} className="w-9 bg-transparent text-center focus:outline-none focus:bg-blue-500 focus:text-white selection:bg-blue-500 selection:text-white rounded-sm" />
                   </div>
                 </div>
               </div>
