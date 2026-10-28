@@ -2414,9 +2414,7 @@ export default function App() {
                  <span className="text-[10px] lg:text-[11px] uppercase font-bold text-zinc-400 tracking-tight">System Online</span>
               </div>
 
-            <AnimatePresence mode="wait">
-               {activeTab === 'home' ? null : 
-               activeTab === 'habits' ? (
+            {activeTab === 'habits' && (
                 <motion.div
                   key="add-habit-btn"
                   initial={{ opacity: 0, scale: 0.95 }}
@@ -2428,78 +2426,7 @@ export default function App() {
                     <Plus className="w-4 h-4" /> Add Property
                   </Button>
                 </motion.div>
-              ) : activeTab === 'schedule' ? (
-                <motion.div
-                  key="add-block-btn"
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                >
-                  <Button onClick={() => setShowScheduleModal(true)} className="h-9 py-0 rounded px-4 text-xs tracking-tight font-bold">
-                    <Plus className="w-4 h-4" /> Add Block
-                  </Button>
-                </motion.div>
-              ) : activeTab === 'overthinking' ? (
-                <motion.div
-                  key="log-overthinking-btn"
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                >
-                  <Button onClick={() => {
-                    setEditingOverthinkingLog(null);
-                    setIncludeSketchPage(false);
-                    setCurrentSketch(undefined);
-                    setShowOverthinkingModal(true);
-                  }} className="h-9 py-0 rounded px-4 text-xs tracking-tight font-bold">
-                    <Plus className="w-4 h-4" /> Log Session
-                  </Button>
-                </motion.div>
-              ) : activeTab === 'journal' ? (
-                <motion.div
-                  key="write-journal-btn"
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                >
-                  <Button onClick={() => {
-                    setEditingJournalEntry(null);
-                    setJournalModalCategory(journalSegment);
-                    setIncludeJournalSketchPage(false);
-                    setCurrentJournalSketch(undefined);
-                    setShowJournalModal(true);
-                  }} className="h-9 py-0 rounded px-4 text-xs tracking-tight font-bold">
-                    <Pen className="w-3.5 h-3.5" /> {journalSegment === 'self_thought' ? 'Note Thought' : 'Write Reflection'}
-                  </Button>
-                </motion.div>
-              ) : activeTab === 'tasks' ? (
-                <motion.div
-                  key="add-task-btn"
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                >
-                  <Button onClick={() => { setEditingTask(null); setShowTaskModal(true); }} className="h-9 py-0 rounded px-4 text-xs tracking-tight font-bold underline decoration-zinc-900/10 dark:decoration-white/10 underline-offset-4">
-                    <Plus className="w-4 h-4" /> Add Task
-                  </Button>
-                </motion.div>
-              ) : activeTab === 'study' ? null : (
-                <motion.div
-                  key="trigger-pause-btn"
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                >
-                  <Button 
-                    onClick={() => startUrgeSession()} 
-                    className="h-9 py-0 rounded px-4 text-xs tracking-tight font-bold bg-amber-500 border-amber-500 hover:bg-amber-600 text-white dark:bg-amber-500 dark:text-white"
-                    disabled={!!urgeSession && urgeSession.stage > 0}
-                  >
-                    <Zap className="w-4 h-4" /> Trigger Pause
-                  </Button>
-                </motion.div>
               )}
-            </AnimatePresence>
           </div>
         </header>
 
