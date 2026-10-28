@@ -3753,7 +3753,7 @@ export default function App() {
                                 <div key={log.id} className="p-4 bg-white dark:bg-zinc-900 border-2 border-amber-500 rounded-xl space-y-4 shadow-md">
                                   <div className="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800">
                                     <span className="text-xs font-black uppercase text-amber-500 tracking-wider">Edit Urge Session</span>
-                                    <span className="text-[10px] font-mono text-zinc-400">{format(new Date(log.timestamp), 'MMM d, p')}</span>
+                                    <span className="text-[10px] font-mono text-zinc-400">{log.timestamp ? format(new Date(log.timestamp), 'MMM d, p') : '—'}</span>
                                   </div>
 
                                   <div className="space-y-3">
@@ -3875,7 +3875,7 @@ export default function App() {
                                 <div className="flex items-center justify-between">
                                   <div className="flex items-center gap-2">
                                     <span className="text-[10px] font-mono font-bold text-zinc-400 dark:text-zinc-500 uppercase">
-                                      {format(new Date(log.timestamp), 'MMM d, p')}
+                                      {log.timestamp ? format(new Date(log.timestamp), 'MMM d, p') : '—'}
                                     </span>
                                     <span className={cn(
                                       "px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider",
@@ -3883,7 +3883,7 @@ export default function App() {
                                         ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
                                         : "bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20"
                                     )}>
-                                      {log.outcome.replace(/_/g, ' ')}
+                                      {(log.outcome || 'unknown').replace(/_/g, ' ')}
                                     </span>
                                   </div>
 
@@ -4058,7 +4058,7 @@ export default function App() {
                                             <div className="flex items-center justify-between">
                                               <div className="flex items-center gap-2">
                                                 <span className="text-[10px] font-mono text-zinc-400">
-                                                  {format(new Date(log.timestamp), 'p')}
+                                                  {log.timestamp ? format(new Date(log.timestamp), 'p') : '—'}
                                                 </span>
                                                 <span className={cn(
                                                   "px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider",
@@ -4066,7 +4066,7 @@ export default function App() {
                                                     ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
                                                     : "bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20"
                                                 )}>
-                                                  {log.outcome.replace(/_/g, ' ')}
+                                                  {(log.outcome || 'unknown').replace(/_/g, ' ')}
                                                 </span>
                                               </div>
                                               <div className="flex items-center gap-1">
