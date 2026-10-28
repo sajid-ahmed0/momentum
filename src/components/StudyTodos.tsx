@@ -371,7 +371,7 @@ export const StudyTodos: React.FC<StudyTodosProps> = ({ todos, onAdd, onUpdate, 
                     placeholder="Add a sub-task (e.g., Read chapter 1)"
                     className="flex-1 px-4 py-3 rounded-sm border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 focus:bg-white dark:focus:bg-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-100 transition-all font-bold text-sm dark:text-zinc-100"
                   />
-                  <Button type="button" onClick={addModalSubtask} className="h-12 px-4 text-xs font-bold shrink-0">
+                  <Button type="button" variant="secondary" onClick={addModalSubtask} className="h-12 px-4 text-xs shrink-0">
                     Add
                   </Button>
                 </div>
