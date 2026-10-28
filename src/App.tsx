@@ -2483,7 +2483,7 @@ export default function App() {
                     <Plus className="w-4 h-4" /> Add Task
                   </Button>
                 </motion.div>
-              ) : (
+              ) : activeTab === 'study' ? null : (
                 <motion.div
                   key="trigger-pause-btn"
                   initial={{ opacity: 0, scale: 0.95 }}
