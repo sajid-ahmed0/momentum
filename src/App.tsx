@@ -3046,9 +3046,9 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="columns-1 md:columns-2 gap-6">
+                <div className={overthinkingLogs.length === 0 ? "" : "columns-1 md:columns-2 gap-6"}>
                   {overthinkingLogs.length === 0 ? (
-                    <div className="p-12 border-2 border-dashed border-zinc-100 dark:border-zinc-800 rounded-xl flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-600">
+                    <div className="p-12 border-2 border-dashed border-zinc-100 dark:border-zinc-800 rounded-xl flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-600 break-inside-avoid">
                       <Activity className="w-12 h-12 mb-4 opacity-20" />
                       <p className="font-bold uppercase tracking-widest text-[10px] mb-3">No overthinking sessions logged</p>
                       <Button onClick={() => {
