@@ -3044,6 +3044,14 @@ export default function App() {
                     <h2 className="text-2xl font-black uppercase tracking-tighter dark:text-zinc-100">Overthinking Log</h2>
                     <p className="text-sm text-zinc-400 font-medium dark:text-zinc-500">Tracking mental intensity and triggers</p>
                   </div>
+                  <Button onClick={() => {
+                    setEditingOverthinkingLog(null);
+                    setIncludeSketchPage(false);
+                    setCurrentSketch(undefined);
+                    setShowOverthinkingModal(true);
+                  }} className="h-9 py-0 rounded px-4 text-xs tracking-tight font-bold shrink-0">
+                    <Plus className="w-4 h-4" /> Log Session
+                  </Button>
                 </div>
 
                 <div className={overthinkingLogs.length === 0 ? "" : "columns-1 md:columns-2 gap-6"}>
