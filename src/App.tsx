@@ -2326,26 +2326,6 @@ export default function App() {
             </>
           )}
 
-          {!isStandalone && (
-            <div className="mt-2.5 pt-2.5 border-t border-zinc-100 dark:border-zinc-900 space-y-2">
-              <button 
-                onClick={handleInstallClick}
-                className="w-full flex items-center justify-between group py-1"
-              >
-                <div className="flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center shadow-lg shadow-black/10 dark:shadow-white/5">
-                    <Download className="w-3.5 h-3.5 text-white dark:text-zinc-900" />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-900 dark:text-zinc-100 transition-colors">Install App</p>
-                    <p className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">Use as Native</p>
-                  </div>
-                </div>
-                <ArrowRight className="w-3 h-3 text-zinc-300 opacity-0 group-hover:opacity-100 transition-all -translate-x-1 group-hover:translate-x-0" />
-              </button>
-            </div>
-          )}
-          
           <div className="mt-2.5 pt-2 border-t border-zinc-50 dark:border-zinc-900 opacity-40">
             <p className="text-[8px] font-mono font-bold uppercase tracking-[0.2em] text-zinc-400">
               Developed by <span className="text-zinc-900 dark:text-zinc-100 italic">Sajid Ahmed</span>
@@ -4581,22 +4561,7 @@ export default function App() {
                     </div>
                   </div>
 
-                  {!isStandalone && (
-                    <div className="mb-6">
-                      <h5 className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 mb-4">APPLICATION</h5>
-                      <button 
-                        onClick={() => {
-                          handleInstallClick();
-                          setIsMenuOpen(false);
-                        }}
-                        className="w-full flex items-center px-4 py-3 rounded-xl bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 transition-all text-sm font-bold uppercase tracking-tight shadow-lg shadow-black/10 dark:shadow-white/5"
-                      >
-                        <Download className="w-4 h-4 mr-4" /> Install Momentum
-                      </button>
-                    </div>
-                  )}
-
-                  <button 
+                                    <button 
                     onClick={logout}
                     className="w-full flex items-center px-4 py-4 rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors text-sm font-bold uppercase tracking-tight"
                   >
@@ -6388,54 +6353,6 @@ export default function App() {
       </AnimatePresence>
 
       <AnimatePresence>
-        {showInstallHelp && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="bg-white dark:bg-zinc-950 border-2 border-zinc-900 dark:border-zinc-100 p-8 rounded-lg max-w-sm w-full shadow-2xl relative"
-            >
-              <button 
-                onClick={() => setShowInstallHelp(false)}
-                className="absolute top-4 right-4 p-2 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              <div className="flex items-center gap-4 mb-6">
-                <div className="w-12 h-12 rounded bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center shrink-0">
-                  <Share2 className="w-6 h-6 text-white dark:text-zinc-900" />
-                </div>
-                <h3 className="text-xl font-black uppercase tracking-tighter dark:text-white">Install Momentum</h3>
-              </div>
-
-              <div className="space-y-6">
-                <div className="space-y-4">
-                  <div className="flex gap-4">
-                    <div className="w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center text-[10px] font-black shrink-0">1</div>
-                    <p className="text-xs font-medium text-zinc-600 dark:text-zinc-400">Tap the <span className="font-bold text-zinc-900 dark:text-zinc-100 underline decoration-zinc-300">Share button</span> in your browser's toolbar.</p>
-                  </div>
-                  <div className="flex gap-4">
-                    <div className="w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center text-[10px] font-black shrink-0">2</div>
-                    <p className="text-xs font-medium text-zinc-600 dark:text-zinc-400">Scroll down and select <span className="font-bold text-zinc-900 dark:text-zinc-100">"Add to Home Screen"</span>.</p>
-                  </div>
-                  <div className="flex gap-4">
-                    <div className="w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center text-[10px] font-black shrink-0">3</div>
-                    <p className="text-xs font-medium text-zinc-600 dark:text-zinc-400">Tap <span className="font-bold text-zinc-900 dark:text-zinc-100">"Add"</span> to finish. Reclaim your focus instantly.</p>
-                  </div>
-                </div>
-                
-                <Button 
-                  onClick={() => setShowInstallHelp(false)}
-                  className="w-full h-12 font-black uppercase tracking-widest text-xs"
-                >
-                  Got It
-                </Button>
-              </div>
-            </motion.div>
-          </div>
-        )}
         {urgeSession && urgeSession.showBreather && (
           <BreathingGuide 
             onBack={() => setUrgeSession(prev => prev ? { ...prev, showBreather: false } : null)} 
