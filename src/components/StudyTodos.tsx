@@ -81,6 +81,8 @@ interface StudyTodosProps {
 export const StudyTodos: React.FC<StudyTodosProps> = ({ todos, onAdd, onUpdate, onDelete, onToggle, onToggleSubtask }) => {
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<StudyTodo | null>(null);
+  const [modalSubtasks, setModalSubtasks] = useState<BlockTask[]>([]);
+  const [newSubtask, setNewSubtask] = useState('');
 
   const sorted = [...todos].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
   const doneCount = sorted.filter(t => t.completed).length;
@@ -97,15 +99,33 @@ export const StudyTodos: React.FC<StudyTodosProps> = ({ todos, onAdd, onUpdate, 
   const closeModal = () => {
     setShowModal(false);
     setEditing(null);
+    setModalSubtasks([]);
+    setNewSubtask('');
   };
 
-  const parseSubtasks = (text: string, existing?: BlockTask[]): BlockTask[] => {
-    const doneByText = new Map((existing || []).map(st => [st.text, st.completed]));
-    return text.split('\n').map(line => line.trim()).filter(Boolean).map((line, i) => ({
-      id: `${Date.now()}-${i}-${Math.random().toString(36).slice(2, 7)}`,
-      text: line,
-      completed: doneByText.get(line) || false,
-    }));
+  const openAddModal = () => {
+    setEditing(null);
+    setModalSubtasks([]);
+    setNewSubtask('');
+    setShowModal(true);
+  };
+
+  const openEditModal = (todo: StudyTodo) => {
+    setEditing(todo);
+    setModalSubtasks(todo.subtasks || []);
+    setNewSubtask('');
+    setShowModal(true);
+  };
+
+  const addModalSubtask = () => {
+    const text = newSubtask.trim();
+    if (!text) return;
+    setModalSubtasks(prev => [...prev, {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      text,
+      completed: false,
+    }]);
+    setNewSubtask('');
   };
 
   const renderItem = (todo: StudyTodo) => (
@@ -159,8 +179,7 @@ export const StudyTodos: React.FC<StudyTodosProps> = ({ todos, onAdd, onUpdate, 
       <div className="flex items-center gap-1 lg:opacity-0 lg:group-hover:opacity-100 opacity-100 transition-opacity">
         <button
           onClick={() => {
-            setEditing(todo);
-            setShowModal(true);
+            openEditModal(todo);
           }}
           className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
           title="Edit"
@@ -228,8 +247,7 @@ export const StudyTodos: React.FC<StudyTodosProps> = ({ todos, onAdd, onUpdate, 
         <div className="flex items-center gap-2">
           <Button
             onClick={() => {
-              setEditing(null);
-              setShowModal(true);
+              openAddModal();
             }}
             className="h-9 px-5 font-black uppercase tracking-widest text-[10px] flex items-center gap-2"
           >
@@ -261,8 +279,7 @@ export const StudyTodos: React.FC<StudyTodosProps> = ({ todos, onAdd, onUpdate, 
               <p className="font-bold uppercase tracking-[0.2em] text-[10px]">No study todos yet</p>
               <Button
                 onClick={() => {
-                  setEditing(null);
-                  setShowModal(true);
+                  openAddModal();
                 }}
                 className="mt-3 h-8 px-4 font-bold uppercase tracking-wider text-[10px]"
               >
@@ -291,7 +308,7 @@ export const StudyTodos: React.FC<StudyTodosProps> = ({ todos, onAdd, onUpdate, 
               subject: (fd.get('subject') as string) || '',
               date: fd.get('date') as string,
               time: fd.get('time') as string,
-              subtasks: parseSubtasks((fd.get('subtasks') as string) || '', editing?.subtasks),
+              subtasks: modalSubtasks,
             };
             if (editing) {
               onUpdate(editing.id, data);
@@ -325,14 +342,40 @@ export const StudyTodos: React.FC<StudyTodosProps> = ({ todos, onAdd, onUpdate, 
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold uppercase text-zinc-400 dark:text-zinc-500 tracking-[0.2em] mb-3">Subtasks (Optional)</label>
-              <textarea
-                name="subtasks"
-                rows={3}
-                defaultValue={editing?.subtasks?.map(st => st.text).join('\n') || ''}
-                placeholder={"One subtask per line\ne.g. Read the theory\nSolve 20 problems\nRevise the mistakes"}
-                className="w-full px-4 py-4 rounded-sm border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 focus:bg-white dark:focus:bg-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-100 transition-all font-bold text-sm dark:text-zinc-100"
-              />
+              <label className="block text-[10px] font-bold uppercase text-zinc-400 dark:text-zinc-500 tracking-[0.2em] mb-3">Sub-tasks (Optional)</label>
+              <div className="space-y-2">
+                {modalSubtasks.map(st => (
+                  <div key={st.id} className="flex items-center gap-2 px-4 py-3 rounded-sm border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50">
+                    <span className="flex-1 font-bold text-sm dark:text-zinc-100">{st.text}</span>
+                    <button
+                      type="button"
+                      onClick={() => setModalSubtasks(prev => prev.filter(x => x.id !== st.id))}
+                      className="p-1 text-zinc-400 hover:text-red-500 transition-colors shrink-0"
+                      title="Remove sub-task"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={newSubtask}
+                    onChange={(e) => setNewSubtask(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        addModalSubtask();
+                      }
+                    }}
+                    placeholder="Add a sub-task (e.g., Read chapter 1)"
+                    className="flex-1 px-4 py-3 rounded-sm border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 focus:bg-white dark:focus:bg-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-100 transition-all font-bold text-sm dark:text-zinc-100"
+                  />
+                  <Button type="button" onClick={addModalSubtask} className="h-12 px-4 text-xs font-bold shrink-0">
+                    Add
+                  </Button>
+                </div>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-6">
