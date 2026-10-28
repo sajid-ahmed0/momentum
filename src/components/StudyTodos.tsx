@@ -83,6 +83,8 @@ export const StudyTodos: React.FC<StudyTodosProps> = ({ todos, onAdd, onUpdate, 
   const [editing, setEditing] = useState<StudyTodo | null>(null);
   const [modalSubtasks, setModalSubtasks] = useState<BlockTask[]>([]);
   const [newSubtask, setNewSubtask] = useState('');
+  const [editingSubtaskId, setEditingSubtaskId] = useState<string | null>(null);
+  const [editingSubtaskText, setEditingSubtaskText] = useState('');
 
   const sorted = [...todos].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
   const doneCount = sorted.filter(t => t.completed).length;
@@ -101,12 +103,16 @@ export const StudyTodos: React.FC<StudyTodosProps> = ({ todos, onAdd, onUpdate, 
     setEditing(null);
     setModalSubtasks([]);
     setNewSubtask('');
+    setEditingSubtaskId(null);
+    setEditingSubtaskText('');
   };
 
   const openAddModal = () => {
     setEditing(null);
     setModalSubtasks([]);
     setNewSubtask('');
+    setEditingSubtaskId(null);
+    setEditingSubtaskText('');
     setShowModal(true);
   };
 
@@ -114,7 +120,17 @@ export const StudyTodos: React.FC<StudyTodosProps> = ({ todos, onAdd, onUpdate, 
     setEditing(todo);
     setModalSubtasks(todo.subtasks || []);
     setNewSubtask('');
+    setEditingSubtaskId(null);
+    setEditingSubtaskText('');
     setShowModal(true);
+  };
+
+  const saveEditingSubtask = () => {
+    const text = editingSubtaskText.trim();
+    if (!text || !editingSubtaskId) return;
+    setModalSubtasks(prev => prev.map(x => x.id === editingSubtaskId ? { ...x, text } : x));
+    setEditingSubtaskId(null);
+    setEditingSubtaskText('');
   };
 
   const addModalSubtask = () => {
@@ -346,15 +362,68 @@ export const StudyTodos: React.FC<StudyTodosProps> = ({ todos, onAdd, onUpdate, 
               <div className="space-y-2">
                 {modalSubtasks.map(st => (
                   <div key={st.id} className="flex items-center gap-2 px-4 py-3 rounded-sm border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50">
-                    <span className="flex-1 font-bold text-sm dark:text-zinc-100">{st.text}</span>
-                    <button
-                      type="button"
-                      onClick={() => setModalSubtasks(prev => prev.filter(x => x.id !== st.id))}
-                      className="p-1 text-zinc-400 hover:text-red-500 transition-colors shrink-0"
-                      title="Remove sub-task"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
+                    {editingSubtaskId === st.id ? (
+                      <>
+                        <input
+                          type="text"
+                          value={editingSubtaskText}
+                          onChange={(e) => setEditingSubtaskText(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              saveEditingSubtask();
+                            } else if (e.key === 'Escape') {
+                              setEditingSubtaskId(null);
+                              setEditingSubtaskText('');
+                            }
+                          }}
+                          autoFocus
+                          className="flex-1 px-2 py-1 rounded-sm bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-100 font-bold text-sm dark:text-zinc-100"
+                        />
+                        <button
+                          type="button"
+                          onClick={saveEditingSubtask}
+                          className="p-1 text-emerald-600 hover:text-emerald-500 transition-colors shrink-0"
+                          title="Save sub-task"
+                        >
+                          <Check className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingSubtaskId(null);
+                            setEditingSubtaskText('');
+                          }}
+                          className="px-1 text-xs font-bold text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors shrink-0"
+                          title="Cancel editing"
+                        >
+                          Cancel
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <span className="flex-1 font-bold text-sm dark:text-zinc-100">{st.text}</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingSubtaskId(st.id);
+                            setEditingSubtaskText(st.text);
+                          }}
+                          className="p-1 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors shrink-0"
+                          title="Edit sub-task"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setModalSubtasks(prev => prev.filter(x => x.id !== st.id))}
+                          className="p-1 text-zinc-400 hover:text-red-500 transition-colors shrink-0"
+                          title="Remove sub-task"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </>
+                    )}
                   </div>
                 ))}
                 <div className="flex items-center gap-2">
