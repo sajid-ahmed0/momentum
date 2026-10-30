@@ -2509,14 +2509,14 @@ export const TimeBlockingGrid = React.memo<TimeBlockingGridProps>(({
                             {/* UNIFIED SIDE-BY-SIDE HORIZONTAL LAYOUT FOR ALL SCALES */}
                             <div className="flex items-center justify-between gap-1 w-full h-full min-w-0">
                               <div className="flex flex-col justify-center min-w-0 flex-1 h-full">
-                                <div className="flex items-center gap-1.5 min-w-0 w-full truncate">
+                                <div className="flex items-center gap-1.5 min-w-0 w-full">
                                   <span className={`font-mono ${timeSize} font-black tracking-tight leading-none text-white shrink-0`}>
                                     {formatTime12h(block.startTime)} – {formatTime12h(block.endTime)}
                                   </span>
                                   <span className="text-white/70 font-mono text-[9px] shrink-0 leading-none">•</span>
-                                  <span className={`font-black ${titleSize} uppercase shrink-0 leading-none flex items-center gap-0.5`}>
-                                    {block.emoji && <span className="normal-case leading-none">{block.emoji}</span>}
-                                    <span className="truncate">{block.activity}</span>
+                                  <span className={`font-black ${titleSize} uppercase leading-tight flex items-start gap-0.5 min-w-0 flex-1`}>
+                                    {block.emoji && <span className="normal-case leading-none shrink-0">{block.emoji}</span>}
+                                    <span className="line-clamp-2 break-words">{block.activity}</span>
                                   </span>
 
                                   {heightPx < 48 && (
