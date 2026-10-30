@@ -377,6 +377,7 @@ export const TimeBlockingGrid = React.memo<TimeBlockingGridProps>(({
   };
 
   const handleDeleteBlockWithGCal = async (block: TimeBlock) => {
+    if (!window.confirm(`Delete "${block.activity}" (${formatTime12h(block.startTime)} – ${formatTime12h(block.endTime)})?`)) return;
     deletedOrGhostBlockIdsRef.current.add(block.id);
     const linkedGCalId = getLinkedGCalId(block);
     if (linkedGCalId) {
@@ -2614,7 +2615,7 @@ export const TimeBlockingGrid = React.memo<TimeBlockingGridProps>(({
                                       e.stopPropagation();
                                       handleDeleteBlockWithGCal(block);
                                     }}
-                                    className="opacity-0 group-hover/card:opacity-100 p-0.5 hover:bg-black/20 rounded transition-opacity shrink-0"
+                                    className="opacity-0 group-hover/card:opacity-100 [@media(hover:none)]:opacity-100 p-0.5 hover:bg-black/20 rounded transition-opacity shrink-0"
                                     title="Delete block"
                                   >
                                     <X className="w-3 h-3 text-white" />
