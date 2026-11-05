@@ -180,11 +180,11 @@ const HabitCell = ({
       if (habit.type === 'number') {
         setLocalValue(log?.value?.toString() ?? '');
       } else if (habit.type === 'duration') {
-        setLocalValue(log?.value ? formatDuration(log.value) : '');
+        setLocalValue(log?.value !== undefined && log?.value !== null ? formatDuration(log.value) : '');
       } else if (habit.type === 'time') {
         if (log?.timeValue) {
           setLocalValue(log.timeValue);
-        } else if (log?.value !== undefined && log.value > 0) {
+        } else if (log?.value !== undefined && log?.value !== null) {
           setLocalValue(formatMinutesToTime(log.value));
         } else {
           setLocalValue('');
@@ -224,13 +224,20 @@ const HabitCell = ({
       if (isNaN(val)) {
         onUpdateValue(habit.id, date, 0, false);
       } else {
-        if (val < 1) val = 1;
+        if (val < 0) val = 0;
         if (val > 10) val = 10;
         onUpdateValue(habit.id, date, val, true);
       }
     } else if (habit.type === 'duration') {
-      const val = parseDuration(localValue);
-      onUpdateValue(habit.id, date, val, val > 0);
+      const trimmed = localValue.trim();
+      if (!trimmed) {
+        onUpdateValue(habit.id, date, 0, false);
+      } else {
+        const val = parseDuration(localValue);
+        // An explicit zero (e.g. "0" or "0m") saves a 0 log; anything else
+        // that parses to 0 is treated as cleared, same as an empty field.
+        onUpdateValue(habit.id, date, val, val > 0 || trimmed.includes('0'));
+      }
     } else if (habit.type === 'time') {
       const trimmed = localValue.trim();
       if (!trimmed) {
