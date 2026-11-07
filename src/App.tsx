@@ -220,11 +220,10 @@ const HabitCell = ({
   const handleBlur = () => {
     setIsFocused(false);
     if (habit.type === 'number') {
-      let val = parseInt(localValue);
+      let val = parseFloat(localValue);
       if (isNaN(val)) {
         onUpdateValue(habit.id, date, 0, false);
       } else {
-        if (val < 0) val = 0;
         if (val > 10) val = 10;
         onUpdateValue(habit.id, date, val, true);
       }
@@ -323,7 +322,7 @@ const HabitCell = ({
               if (habit.type === 'time') {
                 setLocalValue(e.target.value.replace(/[^0-9\s:apmAPM.]/g, ''));
               } else if (habit.type === 'number') {
-                setLocalValue(e.target.value.replace(/[^0-9]/g, ''));
+                setLocalValue(e.target.value.replace(/[^0-9.\-]/g, ''));
               } else {
                 setLocalValue(e.target.value);
               }
