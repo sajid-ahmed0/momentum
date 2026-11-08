@@ -217,10 +217,14 @@ const HabitCell = ({
     );
   }
 
-  const handleBlur = () => {
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
     setIsFocused(false);
+    // Read the live DOM value, not localValue state: on mobile the state
+    // update from the last keystroke can lag behind the blur event, so a
+    // just-typed "0" would read back as "" and get treated as cleared.
+    const raw = e.currentTarget.value;
     if (habit.type === 'number') {
-      let val = parseFloat(localValue);
+      let val = parseFloat(raw);
       if (isNaN(val)) {
         onUpdateValue(habit.id, date, 0, false);
       } else {
@@ -228,17 +232,20 @@ const HabitCell = ({
         onUpdateValue(habit.id, date, val, true);
       }
     } else if (habit.type === 'duration') {
-      const trimmed = localValue.trim();
+      const trimmed = raw.trim();
       if (!trimmed) {
         onUpdateValue(habit.id, date, 0, false);
       } else {
-        const val = parseDuration(localValue);
+        const val = parseDuration(raw);
         // An explicit zero (e.g. "0" or "0m") saves a 0 log; anything else
         // that parses to 0 is treated as cleared, same as an empty field.
         onUpdateValue(habit.id, date, val, val > 0 || trimmed.includes('0'));
+        // Show the saved value immediately instead of flashing empty
+        // while the Firestore listener catches up.
+        setLocalValue(formatDuration(val));
       }
     } else if (habit.type === 'time') {
-      const trimmed = localValue.trim();
+      const trimmed = raw.trim();
       if (!trimmed) {
         setLocalValue('');
         onUpdateValue(habit.id, date, 0, false, '');
