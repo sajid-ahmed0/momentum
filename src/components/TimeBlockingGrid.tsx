@@ -1572,6 +1572,45 @@ export const TimeBlockingGrid = React.memo<TimeBlockingGridProps>(({
     return formatMinutesToHM(endMins - startMins);
   };
 
+  // Minutes (0-1440) back to "HH:mm" so a split segment can be labelled
+  const formatMinsTo24h = (mins: number) => {
+    const h = Math.floor(mins / 60) % 24;
+    const m = mins % 60;
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  };
+
+  // A block whose end time is earlier than its start time runs past midnight.
+  // Split it at midnight so each day shows only its own portion: the start
+  // day shows start → 24:00 and the next day shows 00:00 → end. The stored
+  // block is untouched — editing/deleting still works on the original block.
+  interface DayBlockSegment {
+    block: TimeBlock;
+    segStartMins: number; // minutes from midnight of the shown day
+    segEndMins: number;   // minutes from midnight of the shown day
+    isContinuation: boolean; // true for the after-midnight part on the next day
+  }
+
+  const getSegmentsForDate = (blocks: TimeBlock[], dateStr: string): DayBlockSegment[] => {
+    const prevDateStr = format(addDays(parse(dateStr, 'yyyy-MM-dd', new Date()), -1), 'yyyy-MM-dd');
+    const segments: DayBlockSegment[] = [];
+    for (const block of blocks) {
+      const startMins = getMinutes(block.startTime);
+      const endMins = getMinutes(block.endTime);
+      const crossesMidnight = endMins < startMins;
+      if (block.date === dateStr) {
+        segments.push({
+          block,
+          segStartMins: startMins,
+          segEndMins: crossesMidnight ? 1440 : endMins,
+          isContinuation: false,
+        });
+      } else if (crossesMidnight && endMins > 0 && block.date === prevDateStr) {
+        segments.push({ block, segStartMins: 0, segEndMins: endMins, isContinuation: true });
+      }
+    }
+    return segments.sort((a, b) => a.segStartMins - b.segStartMins);
+  };
+
   // Calculate total block duration in seconds from startTime and endTime
   const getBlockDurationSeconds = (startStr: string, endStr: string) => {
     let startMins = getMinutes(startStr);
@@ -2114,9 +2153,7 @@ export const TimeBlockingGrid = React.memo<TimeBlockingGridProps>(({
                     const isCurrentMonth = isSameMonth(dayDate, selectedDate);
                     const dateStr = format(dayDate, 'yyyy-MM-dd');
                     const isDayToday = dateStr === todayStrInScheduleTz;
-                    const dayBlocks = activeScheduleBlocks
-                      .filter(b => b.date === dateStr)
-                      .sort((a, b) => getMinutes(a.startTime) - getMinutes(b.startTime));
+                    const daySegments = getSegmentsForDate(activeScheduleBlocks, dateStr);
 
                     return (
                       <div
@@ -2164,11 +2201,12 @@ export const TimeBlockingGrid = React.memo<TimeBlockingGridProps>(({
 
                         {/* Event Pills List */}
                         <div className="flex-1 space-y-1 overflow-hidden">
-                          {dayBlocks.slice(0, 3).map(block => {
+                          {daySegments.slice(0, 3).map(seg => {
+                            const block = seg.block;
                             const dotColor = COLOR_OPTIONS.find(c => c.id === block.color)?.dot || '#4f46e5';
                             return (
                               <div
-                                key={block.id}
+                                key={`${block.id}-${seg.isContinuation ? 'cont' : 'start'}`}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   if (onOpenModalWithDefaults) {
@@ -2182,18 +2220,18 @@ export const TimeBlockingGrid = React.memo<TimeBlockingGridProps>(({
                                 }}
                                 className="px-1.5 py-0.5 rounded text-[10px] font-bold truncate flex items-center gap-1.5 shadow-sm text-white hover:scale-[1.02] transition-transform"
                                 style={{ backgroundColor: dotColor }}
-                                title={`${block.activity} (${formatTime12h(block.startTime)} - ${formatTime12h(block.endTime)})`}
+                                title={`${block.activity} (${formatTime12h(formatMinsTo24h(seg.segStartMins))} - ${formatTime12h(formatMinsTo24h(seg.segEndMins))})`}
                               >
                                 <span className="font-mono text-[9px] opacity-80 shrink-0 flex items-center gap-1">
                                   {block.emoji && <span className="normal-case leading-none">{block.emoji}</span>}
-                                  <span>{formatTime12h(block.startTime).replace(':00', '').replace(' ', '')}</span>
+                                  <span>{formatTime12h(formatMinsTo24h(seg.segStartMins)).replace(':00', '').replace(' ', '')}</span>
                                 </span>
                                 <span className="truncate uppercase font-black">{block.activity}</span>
                               </div>
                             );
                           })}
 
-                          {dayBlocks.length > 3 && (
+                          {daySegments.length > 3 && (
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -2202,7 +2240,7 @@ export const TimeBlockingGrid = React.memo<TimeBlockingGridProps>(({
                               }}
                               className="text-[9px] font-mono font-bold text-amber-600 dark:text-amber-400 hover:underline px-1 py-0.5 block"
                             >
-                              +{dayBlocks.length - 3} more
+                              +{daySegments.length - 3} more
                             </button>
                           )}
                         </div>
@@ -2222,11 +2260,11 @@ export const TimeBlockingGrid = React.memo<TimeBlockingGridProps>(({
               Schedule for {format(selectedDate, 'EEEE, MMMM d')}
             </h3>
             <span className="text-[10px] font-mono text-zinc-400 font-bold">
-              {activeScheduleBlocks.filter(b => b.date === format(selectedDate, 'yyyy-MM-dd')).length} Blocks Scheduled
+              {getSegmentsForDate(activeScheduleBlocks, format(selectedDate, 'yyyy-MM-dd')).length} Blocks Scheduled
             </span>
           </div>
 
-          {activeScheduleBlocks.filter(b => b.date === format(selectedDate, 'yyyy-MM-dd')).length === 0 ? (
+          {getSegmentsForDate(activeScheduleBlocks, format(selectedDate, 'yyyy-MM-dd')).length === 0 ? (
             <div className="p-16 border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl text-center text-zinc-400">
               <Clock className="w-10 h-10 mx-auto mb-3 opacity-30" />
               <p className="text-xs font-bold uppercase tracking-widest">No time blocks set for this day</p>
@@ -2242,16 +2280,15 @@ export const TimeBlockingGrid = React.memo<TimeBlockingGridProps>(({
               </button>
             </div>
           ) : (
-            activeScheduleBlocks
-              .filter(b => b.date === format(selectedDate, 'yyyy-MM-dd'))
-              .sort((a, b) => getMinutes(a.startTime) - getMinutes(b.startTime))
-              .map(block => {
+            getSegmentsForDate(activeScheduleBlocks, format(selectedDate, 'yyyy-MM-dd'))
+              .map(seg => {
+                const block = seg.block;
                 const subtasks = block.subtasks || [];
                 const completedTasks = subtasks.filter(t => t.completed || t.status === 'completed').length;
 
                 return (
                   <div 
-                    key={block.id}
+                    key={`${block.id}-${seg.isContinuation ? 'cont' : 'start'}`}
                     className="p-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl hover:border-amber-500/50 transition-all shadow-sm group"
                   >
                     <div className="flex items-center justify-between">
@@ -2263,7 +2300,7 @@ export const TimeBlockingGrid = React.memo<TimeBlockingGridProps>(({
                         <div>
                           <h4 className="font-bold text-sm uppercase dark:text-zinc-100 flex items-center gap-2">
                             <span className="font-mono text-sm sm:text-[15px] font-black tracking-tight text-zinc-700 dark:text-zinc-200">
-                              {formatTime12h(block.startTime)} – {formatTime12h(block.endTime)}
+                              {formatTime12h(formatMinsTo24h(seg.segStartMins))} – {formatTime12h(formatMinsTo24h(seg.segEndMins))}
                             </span>
                             <span className="text-zinc-300 dark:text-zinc-600 font-mono text-[10px]">•</span>
                             <span className="flex items-center gap-1.5 font-black">
@@ -2272,7 +2309,7 @@ export const TimeBlockingGrid = React.memo<TimeBlockingGridProps>(({
                             </span>
                           </h4>
                           <p className="text-[11px] font-mono font-medium text-zinc-400/70 dark:text-zinc-500/70 mt-1">
-                            ({formatBlockDuration(block.startTime, block.endTime)})
+                            ({formatMinutesToHM(seg.segEndMins - seg.segStartMins)})
                           </p>
                         </div>
                       </div>
@@ -2426,7 +2463,7 @@ export const TimeBlockingGrid = React.memo<TimeBlockingGridProps>(({
               >
                 {displayedDays.map(day => {
                   const dateStr = format(day, 'yyyy-MM-dd');
-                  const dayBlocks = activeScheduleBlocks.filter(b => b.date === dateStr);
+                  const daySegments = getSegmentsForDate(activeScheduleBlocks, dateStr);
                   const isDayToday = dateStr === todayStrInScheduleTz;
 
                   return (
@@ -2468,9 +2505,10 @@ export const TimeBlockingGrid = React.memo<TimeBlockingGridProps>(({
                       )}
 
                       {/* VISUAL EVENT CARDS PLACED ON GRID */}
-                      {dayBlocks.map(block => {
-                        const startMins = getMinutes(block.startTime);
-                        const endMins = getMinutes(block.endTime);
+                      {daySegments.map(seg => {
+                        const block = seg.block;
+                        const startMins = seg.segStartMins;
+                        const endMins = seg.segEndMins;
                         const durationMins = Math.max(15, endMins - startMins || 30);
 
                         const topPx = (startMins / 60) * HOUR_HEIGHT;
@@ -2487,7 +2525,7 @@ export const TimeBlockingGrid = React.memo<TimeBlockingGridProps>(({
 
                         return (
                           <motion.div
-                            key={block.id}
+                            key={`${block.id}-${seg.isContinuation ? 'cont' : 'start'}`}
                             initial={{ scale: 0.95, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             style={{
@@ -2512,7 +2550,7 @@ export const TimeBlockingGrid = React.memo<TimeBlockingGridProps>(({
                               <div className="flex flex-col justify-center min-w-0 flex-1 h-full">
                                 <div className="flex items-center gap-1.5 min-w-0 w-full">
                                   <span className={`font-mono ${timeSize} font-black tracking-tight leading-none text-white shrink-0`}>
-                                    {formatTime12h(block.startTime)} – {formatTime12h(block.endTime)}
+                                    {formatTime12h(formatMinsTo24h(seg.segStartMins))} – {formatTime12h(formatMinsTo24h(seg.segEndMins))}
                                   </span>
                                   <span className="text-white/70 font-mono text-[9px] shrink-0 leading-none">•</span>
                                   <span className={`font-black ${titleSize} uppercase leading-tight flex items-start gap-0.5 min-w-0 flex-1`}>
@@ -2524,7 +2562,7 @@ export const TimeBlockingGrid = React.memo<TimeBlockingGridProps>(({
                                     <>
                                       <span className="text-white/60 font-mono text-[8px] shrink-0 leading-none">•</span>
                                       <span className="font-mono text-[10px] font-medium opacity-60 leading-none text-white shrink-0">
-                                        ({formatBlockDuration(block.startTime, block.endTime)})
+                                        ({formatMinutesToHM(endMins - startMins)})
                                       </span>
                                     </>
                                   )}
@@ -2569,7 +2607,7 @@ export const TimeBlockingGrid = React.memo<TimeBlockingGridProps>(({
                                 {heightPx >= 48 && (
                                   <div className="flex items-center gap-1.5 w-full min-w-0 mt-0.5">
                                     <span className="font-mono text-[10px] font-medium opacity-60 leading-none text-white shrink-0">
-                                      ({formatBlockDuration(block.startTime, block.endTime)})
+                                      ({formatMinutesToHM(endMins - startMins)})
                                     </span>
                                     {subtasks.length > 0 && (
                                       <>
