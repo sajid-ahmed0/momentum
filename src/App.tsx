@@ -1811,7 +1811,7 @@ export default function App() {
     
     const todayUrgeLogs = urgeLogs.filter(l => l.date === today);
     const urgeSuccess = todayUrgeLogs.length > 0 
-      ? Math.round((todayUrgeLogs.filter(l => l.outcome === 'resisted' || l.outcome === 'returned_to_focus').length / todayUrgeLogs.length) * 100) 
+      ? Math.round((todayUrgeLogs.filter(l => l.outcome === 'resisted' || l.outcome === 'returned_to_focus').length / Math.max(1, todayUrgeLogs.filter(l => l.outcome !== 'pending').length)) * 100) 
       : 0;
 
     return { habitComp, currentBlock, nextBlock, urgeSuccess, todayUrgeCount: todayUrgeLogs.length };
@@ -3708,7 +3708,7 @@ export default function App() {
                             <p className="text-[9px] font-bold uppercase text-zinc-400 mb-1">Today's Success Rate</p>
                             <p className="stat-value text-emerald-500">
                               {urgeLogs.filter(l => l.date === format(new Date(), 'yyyy-MM-dd')).length > 0 
-                                ? Math.round((urgeLogs.filter(l => l.date === format(new Date(), 'yyyy-MM-dd')).filter(l => l.outcome === 'resisted' || l.outcome === 'returned_to_focus').length / urgeLogs.filter(l => l.date === format(new Date(), 'yyyy-MM-dd')).length) * 100)
+                                ? Math.round((urgeLogs.filter(l => l.date === format(new Date(), 'yyyy-MM-dd')).filter(l => l.outcome === 'resisted' || l.outcome === 'returned_to_focus').length / Math.max(1, urgeLogs.filter(l => l.date === format(new Date(), 'yyyy-MM-dd') && l.outcome !== 'pending').length)) * 100)
                                 : 0}%
                             </p>
                           </div>
@@ -3752,6 +3752,7 @@ export default function App() {
                                           onChange={(e) => setEditingUrgeLog({ ...editingUrgeLog, outcome: e.target.value as any })}
                                           className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg p-2 text-xs font-bold text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-amber-500"
                                         >
+                                          <option value="pending">Pending</option>
                                           <option value="returned_to_focus">Returned To Focus</option>
                                           <option value="resisted">Resisted</option>
                                           <option value="continued_anyway">Continued Anyway</option>
@@ -3834,6 +3835,7 @@ export default function App() {
                                             setEditingUrgeLog(null);
                                           } catch (err) {
                                             console.error('Failed to update urge log:', err);
+                                            alert('Could not save this urge log. Please try again.');
                                           }
                                         }}
                                         className="px-4 py-1.5 bg-amber-500 text-white rounded-lg text-xs font-black uppercase tracking-wider hover:bg-amber-600 transition-all shadow-xs"
@@ -3857,6 +3859,8 @@ export default function App() {
                                       "px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider",
                                       log.outcome === 'resisted' || log.outcome === 'returned_to_focus' 
                                         ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+                                        : log.outcome === 'pending'
+                                        ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20"
                                         : "bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20"
                                     )}>
                                       {(log.outcome || 'unknown').replace(/_/g, ' ')}
@@ -4004,7 +4008,7 @@ export default function App() {
                                       </div>
                                       <div className="flex justify-between items-center text-[10px]">
                                         <span className="text-zinc-500 uppercase tracking-wider font-bold">Given In/Continued:</span>
-                                        <span className="font-black text-red-500">{dayLogs.length - successes}</span>
+                                        <span className="font-black text-red-500">{dayLogs.filter(l => l.outcome === 'given_in' || l.outcome === 'continued_anyway').length}</span>
                                       </div>
                                     </div>
                                   </div>
@@ -4040,6 +4044,8 @@ export default function App() {
                                                   "px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider",
                                                   log.outcome === 'resisted' || log.outcome === 'returned_to_focus' 
                                                     ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+                                                    : log.outcome === 'pending'
+                                                    ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20"
                                                     : "bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20"
                                                 )}>
                                                   {(log.outcome || 'unknown').replace(/_/g, ' ')}

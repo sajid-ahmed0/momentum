@@ -126,7 +126,7 @@ export interface UrgeLog {
   willHelpFuture: boolean;
   whyNotReason?: string;
   whatToDoInstead?: string;
-  outcome: 'resisted' | 'given_in' | 'returned_to_focus' | 'continued_anyway';
+  outcome: 'resisted' | 'given_in' | 'returned_to_focus' | 'continued_anyway' | 'pending';
   durationSeconds: number;
   date: string;
   uid: string;

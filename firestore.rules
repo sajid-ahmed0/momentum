@@ -91,7 +91,7 @@ service cloud.firestore {
       return data.keys().hasAll(['intent', 'willHelpFuture', 'outcome', 'date', 'uid', 'timestamp', 'durationSeconds']) &&
              data.intent is string && data.intent.size() <= 500 &&
              data.willHelpFuture is bool &&
-             data.outcome in ["resisted", "given_in", "returned_to_focus", "continued_anyway"] &&
+             data.outcome in ["resisted", "given_in", "returned_to_focus", "continued_anyway", "pending"] &&
              data.durationSeconds is number &&
              data.date is string && data.date.matches("^\\d{4}-\\d{2}-\\d{2}$") &&
              data.uid == request.auth.uid;
