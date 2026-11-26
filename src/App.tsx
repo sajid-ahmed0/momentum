@@ -4593,6 +4593,17 @@ export default function App() {
                     </div>
                   </div>
 
+                  <button
+                    onClick={() => {
+                      const url = new URL(window.location.href);
+                      url.searchParams.set('r', Date.now().toString());
+                      window.location.replace(url.toString());
+                    }}
+                    className="w-full flex items-center px-4 py-4 rounded-xl text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors text-sm font-bold uppercase tracking-tight"
+                  >
+                    <RefreshCw className="w-5 h-5 mr-4" /> Refresh
+                  </button>
+
                                     <button 
                     onClick={logout}
                     className="w-full flex items-center px-4 py-4 rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors text-sm font-bold uppercase tracking-tight"
