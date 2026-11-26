@@ -1,4 +1,4 @@
-const CACHE_NAME = 'momentum-v8';
+const CACHE_NAME = 'momentum-v9';
 const OFFLINE_URL = 'index.html';
 
 const ASSETS_TO_CACHE = [
@@ -40,7 +40,7 @@ self.addEventListener('fetch', (event) => {
   // For navigate requests (HTML) or index.html, use Network-First
   if (event.request.mode === 'navigate' || url.pathname.endsWith('index.html') || url.pathname === '/') {
     event.respondWith(
-      fetch(event.request)
+      fetch(event.request, { cache: 'no-store' })
         .then((response) => {
           if (response && response.status === 200) {
             const responseToCache = response.clone();
