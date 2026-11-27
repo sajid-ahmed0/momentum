@@ -2364,7 +2364,7 @@ export default function App() {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0 bg-white dark:bg-zinc-950 relative">
-        <header className="h-20 border-b border-high-line flex items-center justify-between px-6 lg:px-10 bg-white sticky top-0 z-20 dark:bg-zinc-950 dark:border-zinc-800">
+        <header className={`${activeTab === 'schedule' ? 'h-12' : 'h-20'} border-b border-high-line flex items-center justify-between px-6 lg:px-10 bg-white sticky top-0 z-20 dark:bg-zinc-950 dark:border-zinc-800`}>
           <div className="flex items-center gap-2">
             <button 
               onClick={() => setIsMenuOpen(true)}
@@ -2417,10 +2417,10 @@ export default function App() {
               </motion.div>
             </AnimatePresence>
             
-            <div className="flex items-center gap-1.5">
+            {activeTab !== 'schedule' && <div className="flex items-center gap-1.5">
                  <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
                  <span className="text-[10px] lg:text-[11px] uppercase font-bold text-zinc-400 tracking-tight">System Online</span>
-              </div>
+              </div>}
 
             {activeTab === 'habits' && (
                 <motion.div

@@ -1912,7 +1912,7 @@ export const TimeBlockingGrid = React.memo<TimeBlockingGridProps>(({
   return (
     <div className="w-full flex flex-col h-full bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 overflow-hidden transition-all">
       {/* HEADER CONTROLS */}
-      <div className="p-4 sm:p-6 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/80 dark:bg-zinc-900/80 backdrop-blur-md flex flex-wrap items-center justify-between gap-4">
+      <div className="px-3 py-2 sm:px-5 sm:py-2.5 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/80 dark:bg-zinc-900/80 backdrop-blur-md flex flex-wrap items-center justify-between gap-2">
         
         {/* Date Title & Today Button */}
         <div className="flex items-center gap-3">
@@ -1960,7 +1960,7 @@ export const TimeBlockingGrid = React.memo<TimeBlockingGridProps>(({
                   {format(displayedDays[0], 'MMM d')} – {format(displayedDays[2], 'MMM d, yyyy')}
                 </>
               ) : (
-                format(selectedDate, 'EEEE, MMMM d, yyyy')
+                format(selectedDate, 'EEE, MMM d')
               )}
             </h2>
           </div>
@@ -2082,7 +2082,7 @@ export const TimeBlockingGrid = React.memo<TimeBlockingGridProps>(({
       </div>
 
       {/* QUICK PRESETS STRIP WITH DRAG-TO-SCROLL & CUSTOMIZE BUTTON */}
-      <div className="px-6 py-2.5 bg-zinc-100/60 dark:bg-zinc-900/40 border-b border-zinc-200 dark:border-zinc-800/80 flex items-center justify-between gap-2 text-xs no-scrollbar overflow-hidden">
+      <div className="px-3 sm:px-5 py-1.5 bg-zinc-100/60 dark:bg-zinc-900/40 border-b border-zinc-200 dark:border-zinc-800/80 flex items-center justify-between gap-2 text-xs no-scrollbar overflow-hidden">
         <div 
           ref={quickPresetScrollRef}
           onMouseDown={handleQuickMouseDown}
@@ -2106,7 +2106,7 @@ export const TimeBlockingGrid = React.memo<TimeBlockingGridProps>(({
                   if (quickDragDistance > 5) return; // Prevent triggering preset click when dragging to scroll
                   handleAddPreset(preset.name, preset.durationMinutes, preset.color);
                 }}
-                className="px-2.5 py-1 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700/80 border border-zinc-200 dark:border-zinc-700/80 text-zinc-700 dark:text-zinc-300 font-bold rounded-md shrink-0 transition-all flex items-center gap-1.5 hover:shadow-sm select-none"
+                className="px-2 py-0.5 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700/80 border border-zinc-200 dark:border-zinc-700/80 text-zinc-700 dark:text-zinc-300 font-bold rounded-md shrink-0 transition-all flex items-center gap-1.5 hover:shadow-sm select-none"
               >
                 <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: dotColor }} />
                 <span>{preset.name}</span>
@@ -2405,7 +2405,7 @@ export const TimeBlockingGrid = React.memo<TimeBlockingGridProps>(({
           {/* COLUMN HEADERS */}
           <div className="flex border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/90 dark:bg-zinc-900/90 sticky top-0 z-20">
             {/* Time Axis Header Space */}
-            <div className="w-14 sm:w-16 shrink-0 border-r border-zinc-200 dark:border-zinc-800 py-1.5 text-[9px] font-mono font-bold text-zinc-400 text-center uppercase tracking-wider">
+            <div className="w-14 sm:w-16 shrink-0 border-r border-zinc-200 dark:border-zinc-800 py-1 flex items-center justify-center text-[9px] font-mono font-bold text-zinc-400 text-center uppercase tracking-wider">
               Time
             </div>
 
@@ -2418,15 +2418,15 @@ export const TimeBlockingGrid = React.memo<TimeBlockingGridProps>(({
                   <div 
                     key={day.toISOString()}
                     onClick={() => setSelectedDate(day)}
-                    className={`py-1.5 px-2 text-center border-r border-zinc-200 dark:border-zinc-800/80 cursor-pointer transition-colors ${
+                    className={`py-1 px-2 flex items-center justify-center gap-1.5 border-r border-zinc-200 dark:border-zinc-800/80 cursor-pointer transition-colors ${
                       isDayToday ? 'bg-amber-500/10 dark:bg-amber-500/10' : 'hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50'
                     }`}
                   >
                     <div className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
                       {format(day, 'EEE')}
                     </div>
-                    <div className="mt-0.5 flex items-center justify-center">
-                      <span className={`text-xs font-black w-6 h-6 flex items-center justify-center rounded-full transition-all ${
+                    <div className="flex items-center justify-center">
+                      <span className={`text-[11px] font-black w-5 h-5 flex items-center justify-center rounded-full transition-all ${
                         isDayToday 
                           ? 'bg-amber-500 text-white shadow-md' 
                           : isSelected 
