@@ -49,7 +49,8 @@ import {
   ExternalLink,
   Globe,
   Unlink,
-  ArrowRight
+  ArrowRight,
+  StickyNote
 } from 'lucide-react';
 import { TimeBlock, BlockTask, QuickPreset, DEFAULT_PRESETS } from '../types';
 import {
@@ -191,9 +192,9 @@ interface TimeBlockingGridProps {
   timeBlocks: TimeBlock[];
   quickPresets?: QuickPreset[];
   onUpdateQuickPresets?: (presets: QuickPreset[]) => void;
-  onAddTimeBlock: (data: { startTime: string; endTime: string; activity: string; date: string; color?: string; emoji?: string; subtasks?: BlockTask[]; showCountdown?: boolean; googleCalendarEventId?: string }) => void;
-  onAddBatchTimeBlocks?: (blocks: Array<{ startTime: string; endTime: string; activity: string; date: string; color?: string; emoji?: string; subtasks?: BlockTask[]; showCountdown?: boolean; googleCalendarEventId?: string }>) => Promise<void> | void;
-  onEditTimeBlock: (id: string, data: { startTime: string; endTime: string; activity: string; date?: string; color?: string; emoji?: string; subtasks?: BlockTask[]; showCountdown?: boolean; googleCalendarEventId?: string }, isBackgroundSync?: boolean) => void;
+  onAddTimeBlock: (data: { startTime: string; endTime: string; activity: string; date: string; color?: string; emoji?: string; subtasks?: BlockTask[]; showCountdown?: boolean; googleCalendarEventId?: string; description?: string }) => void;
+  onAddBatchTimeBlocks?: (blocks: Array<{ startTime: string; endTime: string; activity: string; date: string; color?: string; emoji?: string; subtasks?: BlockTask[]; showCountdown?: boolean; googleCalendarEventId?: string; description?: string }>) => Promise<void> | void;
+  onEditTimeBlock: (id: string, data: { startTime: string; endTime: string; activity: string; date?: string; color?: string; emoji?: string; subtasks?: BlockTask[]; showCountdown?: boolean; googleCalendarEventId?: string; description?: string }, isBackgroundSync?: boolean) => void;
   onDeleteTimeBlock: (id: string) => void;
   onToggleSubtask?: (blockId: string, subtaskId: string) => void;
   onOpenModalWithDefaults?: (defaults: { startTime: string; endTime: string; date: string; block?: TimeBlock }) => void;
@@ -2311,6 +2312,12 @@ export const TimeBlockingGrid = React.memo<TimeBlockingGridProps>(({
                           <p className="text-[11px] font-mono font-medium text-zinc-400/70 dark:text-zinc-500/70 mt-1">
                             ({formatMinutesToHM(seg.segEndMins - seg.segStartMins)})
                           </p>
+                          {block.description && (
+                            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1.5 whitespace-pre-wrap break-words flex items-start gap-1.5">
+                              <StickyNote className="w-3 h-3 mt-0.5 shrink-0 text-amber-500" />
+                              <span>{block.description}</span>
+                            </p>
+                          )}
                         </div>
                       </div>
 
@@ -2556,6 +2563,11 @@ export const TimeBlockingGrid = React.memo<TimeBlockingGridProps>(({
                                   <span className={`font-black ${titleSize} uppercase leading-tight flex items-start gap-0.5 min-w-0 flex-1`}>
                                     {block.emoji && <span className="normal-case leading-none shrink-0">{block.emoji}</span>}
                                     <span className="line-clamp-2 break-words">{block.activity}</span>
+                                    {block.description && (
+                                      <span title={block.description} className="shrink-0 leading-none mt-0.5">
+                                        <StickyNote className="w-3 h-3 text-white/80" />
+                                      </span>
+                                    )}
                                   </span>
 
                                   {heightPx < 48 && (

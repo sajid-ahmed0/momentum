@@ -63,6 +63,7 @@ export interface TimeBlock {
   subtasks?: BlockTask[];
   showCountdown?: boolean;
   googleCalendarEventId?: string;
+  description?: string; // free-text note, e.g. why time was wasted in this block
   uid: string;
   timestamp: number;
 }

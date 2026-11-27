@@ -1329,7 +1329,7 @@ export default function App() {
     }
   };
 
-  const handleAddTimeBlock = async (data: { startTime: string; endTime: string; activity: string; date?: string; color?: string; emoji?: string; subtasks?: BlockTask[]; showCountdown?: boolean; googleCalendarEventId?: string }) => {
+  const handleAddTimeBlock = async (data: { startTime: string; endTime: string; activity: string; date?: string; color?: string; emoji?: string; subtasks?: BlockTask[]; showCountdown?: boolean; googleCalendarEventId?: string; description?: string }) => {
     if (!user) return;
     setShowScheduleModal(false);
     setScheduleDefaults(null);
@@ -1343,6 +1343,7 @@ export default function App() {
         subtasks: data.subtasks || modalSubtasks || [],
         showCountdown: data.showCountdown !== undefined ? Boolean(data.showCountdown) : Boolean(modalShowCountdown),
         googleCalendarEventId: data.googleCalendarEventId,
+        description: data.description ? data.description : undefined,
         date: data.date || scheduleDefaults?.date || getDateStrInTz(new Date(), DEFAULT_SCHEDULE_TIMEZONE),
         uid: user.uid,
         timestamp: Date.now()
@@ -1413,7 +1414,7 @@ export default function App() {
     }
   };
 
-  const handleEditTimeBlock = async (id: string, data: { startTime: string; endTime: string; activity: string; date?: string; color?: string; emoji?: string; subtasks?: BlockTask[]; showCountdown?: boolean; googleCalendarEventId?: string }, isBackgroundSync: boolean = false) => {
+  const handleEditTimeBlock = async (id: string, data: { startTime: string; endTime: string; activity: string; date?: string; color?: string; emoji?: string; subtasks?: BlockTask[]; showCountdown?: boolean; googleCalendarEventId?: string; description?: string }, isBackgroundSync: boolean = false) => {
     if (!isBackgroundSync) {
       setShowScheduleModal(false);
       setEditingTimeBlock(null);
@@ -1431,6 +1432,8 @@ export default function App() {
         subtasks: data.subtasks !== undefined ? data.subtasks : (existingBlock?.subtasks ?? modalSubtasks),
         showCountdown: data.showCountdown !== undefined ? Boolean(data.showCountdown) : Boolean(existingBlock?.showCountdown ?? modalShowCountdown),
         googleCalendarEventId: data.googleCalendarEventId !== undefined ? data.googleCalendarEventId : existingBlock?.googleCalendarEventId,
+        // Keep the existing note when a background sync edits the block without passing one
+        description: data.description !== undefined ? data.description : existingBlock?.description,
         timestamp: Date.now()
       }));
     } catch (err) {
@@ -5214,6 +5217,7 @@ export default function App() {
                 color: modalColor,
                 subtasks: modalSubtasks,
                 showCountdown: modalShowCountdown,
+                description: ((fd.get('description') as string) || '').trim(),
               };
               
               if (editingTimeBlock) {
@@ -5276,6 +5280,19 @@ export default function App() {
                     </button>
                   )}
                 </div>
+              </div>
+
+              {/* DESCRIPTION / NOTE */}
+              <div>
+                <label className="block text-[10px] font-bold uppercase text-zinc-400 dark:text-zinc-500 tracking-[0.2em] mb-2">Description</label>
+                <textarea
+                  name="description"
+                  rows={3}
+                  maxLength={2000}
+                  defaultValue={editingTimeBlock?.description || ''}
+                  placeholder="Optional note, e.g. Wasted 20 min on reels, phone was next to me"
+                  className="w-full px-4 py-3 rounded-sm border border-high-line dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 focus:bg-white dark:focus:bg-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-100 transition-all text-sm font-medium dark:text-zinc-100 resize-y"
+                />
               </div>
 
               {/* COLOR SELECTION */}
