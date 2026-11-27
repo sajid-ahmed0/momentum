@@ -2554,7 +2554,7 @@ export const TimeBlockingGrid = React.memo<TimeBlockingGridProps>(({
                           >
                             {/* UNIFIED SIDE-BY-SIDE HORIZONTAL LAYOUT FOR ALL SCALES */}
                             <div className="flex items-center justify-between gap-1 w-full h-full min-w-0">
-                              <div className={`flex flex-col justify-center min-w-0 h-full ${block.description && heightPx >= 30 ? 'flex-initial max-w-[58%]' : 'flex-1'}`}>
+                              <div className={`flex flex-col justify-center min-w-0 h-full ${block.description && heightPx >= 30 ? 'flex-1 sm:flex-initial sm:max-w-[58%]' : 'flex-1'}`}>
                                 <div className="flex items-center gap-1.5 min-w-0 w-full">
                                   <span className={`font-mono ${timeSize} font-black tracking-tight leading-none text-white shrink-0`}>
                                     {formatTime12h(formatMinsTo24h(seg.segStartMins))} – {formatTime12h(formatMinsTo24h(seg.segEndMins))}
@@ -2662,7 +2662,7 @@ export const TimeBlockingGrid = React.memo<TimeBlockingGridProps>(({
                                 {/* DESCRIPTION NOTE BESIDE THE TITLE (RIGHT SIDE OF THE CARD) */}
                                 {block.description && heightPx >= 30 && (
                                   <div
-                                    className="flex-1 min-w-0 self-center ml-2.5 flex items-start gap-1.5 bg-black/35 border-l-[3px] border-white rounded-lg px-2 py-1 shadow-sm"
+                                    className="hidden sm:flex flex-1 min-w-0 self-center ml-2.5 items-start gap-1.5 bg-black/35 border-l-[3px] border-white rounded-lg px-2 py-1 shadow-sm"
                                     title={block.description}
                                   >
                                     <StickyNote className="w-3 h-3 text-white shrink-0 mt-[2px]" />
