@@ -2662,12 +2662,13 @@ export const TimeBlockingGrid = React.memo<TimeBlockingGridProps>(({
                                 {/* DESCRIPTION NOTE BESIDE THE TITLE (RIGHT SIDE OF THE CARD) */}
                                 {block.description && heightPx >= 30 && (
                                   <div
-                                    className="flex-1 min-w-0 self-center ml-2 pl-2.5 border-l-2 border-white/40"
+                                    className="flex-1 min-w-0 self-center ml-2.5 flex items-start gap-1.5 bg-black/35 border-l-[3px] border-white rounded-lg px-2 py-1 shadow-sm"
                                     title={block.description}
                                   >
+                                    <StickyNote className="w-3 h-3 text-white shrink-0 mt-[2px]" />
                                     <p
-                                      className="text-[10.5px] font-semibold leading-snug text-white/90 break-words whitespace-pre-wrap overflow-hidden"
-                                      style={{ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: Math.max(1, Math.floor((heightPx - 12) / 15)) }}
+                                      className="text-[11px] font-bold leading-snug text-white break-words whitespace-pre-wrap overflow-hidden"
+                                      style={{ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: Math.max(1, Math.floor((heightPx - 16) / 15)) }}
                                     >
                                       {block.description}
                                     </p>
