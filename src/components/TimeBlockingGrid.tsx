@@ -2554,7 +2554,7 @@ export const TimeBlockingGrid = React.memo<TimeBlockingGridProps>(({
                           >
                             {/* UNIFIED SIDE-BY-SIDE HORIZONTAL LAYOUT FOR ALL SCALES */}
                             <div className="flex items-center justify-between gap-1 w-full h-full min-w-0">
-                              <div className="flex flex-col justify-center min-w-0 flex-1 h-full">
+                              <div className={`flex flex-col justify-center min-w-0 h-full ${block.description && heightPx >= 30 ? 'flex-initial max-w-[58%]' : 'flex-1'}`}>
                                 <div className="flex items-center gap-1.5 min-w-0 w-full">
                                   <span className={`font-mono ${timeSize} font-black tracking-tight leading-none text-white shrink-0`}>
                                     {formatTime12h(formatMinsTo24h(seg.segStartMins))} – {formatTime12h(formatMinsTo24h(seg.segEndMins))}
@@ -2657,17 +2657,22 @@ export const TimeBlockingGrid = React.memo<TimeBlockingGridProps>(({
                                   </div>
                                 )}
 
-                                {/* DESCRIPTION NOTE VISIBLE ON THE CARD WHEN THERE IS ROOM */}
-                                {block.description && heightPx >= 60 && (
-                                  <p
-                                    className="text-[10px] font-medium leading-snug text-white/85 mt-1 break-words whitespace-pre-wrap overflow-hidden"
-                                    style={{ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: Math.max(1, Math.floor((heightPx - 44) / 14)) }}
+                              </div>
+
+                                {/* DESCRIPTION NOTE BESIDE THE TITLE (RIGHT SIDE OF THE CARD) */}
+                                {block.description && heightPx >= 30 && (
+                                  <div
+                                    className="flex-1 min-w-0 self-center ml-2 pl-2.5 border-l-2 border-white/40"
                                     title={block.description}
                                   >
-                                    {block.description}
-                                  </p>
+                                    <p
+                                      className="text-[10.5px] font-semibold leading-snug text-white/90 break-words whitespace-pre-wrap overflow-hidden"
+                                      style={{ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: Math.max(1, Math.floor((heightPx - 12) / 15)) }}
+                                    >
+                                      {block.description}
+                                    </p>
+                                  </div>
                                 )}
-                              </div>
 
                                 <div className="flex items-center gap-2 shrink-0 self-center pl-2 mr-12 sm:mr-16">
                                   {block.showCountdown && renderBlockCountdown(block, heightPx, false)}
