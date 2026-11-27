@@ -2656,6 +2656,17 @@ export const TimeBlockingGrid = React.memo<TimeBlockingGridProps>(({
                                     )}
                                   </div>
                                 )}
+
+                                {/* DESCRIPTION NOTE VISIBLE ON THE CARD WHEN THERE IS ROOM */}
+                                {block.description && heightPx >= 60 && (
+                                  <p
+                                    className="text-[10px] font-medium leading-snug text-white/85 mt-1 break-words whitespace-pre-wrap overflow-hidden"
+                                    style={{ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: Math.max(1, Math.floor((heightPx - 44) / 14)) }}
+                                    title={block.description}
+                                  >
+                                    {block.description}
+                                  </p>
+                                )}
                               </div>
 
                                 <div className="flex items-center gap-2 shrink-0 self-center pl-2 mr-12 sm:mr-16">
