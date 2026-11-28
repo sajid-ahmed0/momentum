@@ -2564,7 +2564,7 @@ export const TimeBlockingGrid = React.memo<TimeBlockingGridProps>(({
                                     {block.emoji && <span className="normal-case leading-none shrink-0">{block.emoji}</span>}
                                     <span className="line-clamp-2 break-words">{block.activity}</span>
                                     {block.description && (
-                                      <span title={block.description} className="shrink-0 leading-none mt-0.5">
+                                      <span title={block.description} className={`shrink-0 leading-none mt-0.5 ${heightPx >= 30 ? 'sm:hidden' : ''}`}>
                                         <StickyNote className="w-3 h-3 text-white/80" />
                                       </span>
                                     )}
